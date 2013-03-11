@@ -1,0 +1,7 @@
+#webglCanvas {
+    background: #000;
+    width: 90%;
+    height: 90%;
+    overflow:hidden;
+    position:absolute;
+}
