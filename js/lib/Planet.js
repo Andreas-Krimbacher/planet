@@ -3,6 +3,8 @@ PS.lib.Planet = Class.extend({
 
     CLASS_NAME: "PS.Planet",
 
+    IMAGE_PATH : 'img/',
+
     mesh : null,
 
     radius : null,
@@ -13,7 +15,7 @@ PS.lib.Planet = Class.extend({
 
     segments : 16,
 
-    segmentsOrbit : 60,
+    segmentsOrbit : 50,
 
     rings : 16,
 
@@ -21,25 +23,37 @@ PS.lib.Planet = Class.extend({
 
 
     // ==== functions ====
-    init : function(radius,color,dist,rotSpeed){
+    init : function(radius,image,dist,roundTime,revolutionSpeed){
 
         this.radius = radius;
         this.dist = dist;
-        this.rotSpeed = rotSpeed;
+        this.rotSpeed = 1/roundTime;
+        this.revolutionSpeed = 0.1/revolutionSpeed;
 
         // create the sphere's material
-        var sphereMaterial = new THREE.MeshLambertMaterial(
-            {
-                color: color
-            });
+        if(image){
+            var texture = THREE.ImageUtils.loadTexture(this.IMAGE_PATH + image);
+            var material = new THREE.MeshBasicMaterial( { map: texture } );
+        }
+        else{
+            var material = new THREE.MeshLambertMaterial(
+                {
+                    color: 0xE8251E
+                });
+        }
 
         this.mesh = new THREE.Mesh(
             new THREE.SphereGeometry(this.radius, this.segments, this.rings),
-            sphereMaterial);
+            material);
 
         this.mesh.position.x = this.dist;
         this.mesh.position.y = 0;
         this.mesh.position.z = 0;
+
+        this.mesh.on('click', function(){
+            alert('yes');
+        });
+
 
     },
 
@@ -59,7 +73,7 @@ PS.lib.Planet = Class.extend({
         {
             var x = this.dist * Math.cos( i / this.segmentsOrbit * twopi );
             var z = this.dist * Math.sin( i / this.segmentsOrbit * twopi );
-            var vertex = new THREE.Vertex (new THREE.Vector3(x, 0, z));
+            var vertex = new THREE.Vector3(x, 0, z);
             geometry.vertices.push(vertex);
         }
 
@@ -71,11 +85,16 @@ PS.lib.Planet = Class.extend({
 
     update : function(){
 
-        this.angle += this.rotSpeed;
+        if(this.rotSpeed){
+            this.angle += this.rotSpeed;
 
-        this.mesh.position.z = Math.cos((this.angle * Math.PI)/180)*this.dist;
-        this.mesh.position.x = Math.sin((this.angle * Math.PI)/180)*this.dist;
+            this.mesh.position.z = Math.cos((this.angle * Math.PI)/180)*this.dist;
+            this.mesh.position.x = Math.sin((this.angle * Math.PI)/180)*this.dist;
+        }
 
+        if(this.revolutionSpeed){
+            this.mesh.rotation.y += this.revolutionSpeed;
+        }
 
     }
 
