@@ -39,8 +39,10 @@ PS.lib.Data = Class.extend({
           }
           else if(tableData[x].Status == "Mond"){
               if(objectData[tableData[x].Planet]){
+                  tableData[x].img = 'moon.jpg';
                   if (!objectData[tableData[x].Planet].moon) objectData[tableData[x].Planet].moon = {};
                   objectData[tableData[x].Planet].moon[tableData[x].Name] = tableData[x];
+
               }
               else{
                   alert("no planet for the moon");
@@ -57,21 +59,21 @@ PS.lib.Data = Class.extend({
     importPlanetData : function(){
 
         this.planetTableData = [
-//            {
-//                "Name": "Sonne",
-//                "Planet": "Sonne",
-//                "Status": "Sonne",
-//                "a": "",
-//                "e": "",
-//                "i": "",
-//                "node": "",
-//                "w": "",
-//                "MJ2000": "",
-//                "Periode": "",
-//                "Durchm1": "1392700",
-//                "Durchm2": "",
-//                img : 'sun.jpg'
-//            },
+            {
+                "Name": "Sonne",
+                "Planet": "Sonne",
+                "Status": "Sonne",
+                "a": "",
+                "e": "",
+                "i": "",
+                "node": "",
+                "w": "",
+                "MJ2000": "",
+                "Periode": "",
+                "Durchm1": "13927",
+                "Durchm2": "",
+                img : 'sun.jpg'
+            },
             {
                 "Name": "Merkur",
                 "Planet": "Merkur",
@@ -113,6 +115,7 @@ PS.lib.Data = Class.extend({
                 "w": "102.9472",
                 "MJ2000": "100.4644",
                 "Periode": "365.256",
+                "Revolution": "1",
                 "Durchm1": "12750",
                 "Durchm2": "",
                 img : 'earth.jpg'

@@ -16,16 +16,40 @@
         var planets = [];
 
         for(var x in planetData){
-            planets.push(new  PS.lib.Planet(planetData[x]));
-            universe.addPlanet(planets[planets.length-1]);
-            universe.addObject(planets[planets.length-1].getOrbit());
+            planets[x] = new  PS.lib.Planet(planetData[x]);
+            universe.addPlanet(planets[x]);
         }
 
-        universe.addStars(new PS.lib.Stars(4498252900/1000000).getStars());
+        universe.addStars(new PS.lib.Stars(15000).getStars());
 
         universe.addLight();
-        universe.showAxis('x');
-        universe.showAxis('y');
+//        universe.showAxis('x');
+//        universe.showAxis('y');
+//        universe.showAxis('z');
+//        universe.showAxis('-x');
+//        universe.showAxis('-y');
+//        universe.showAxis('-z');
+
+        $(window).keydown(function(event){
+            if(event.keyCode == 49){
+                universe.resetCamera();
+            }
+            if(event.keyCode == 50){
+                universe.setCameraToPlanet('Erde');
+            }
+
+            if(event.keyCode == 51){
+                universe.setCameraToPlanet('Mars');
+            }
+            if(event.keyCode == 52){
+                universe.setCameraToPlanet('Jupiter');
+            }
+            if(event.keyCode == 53){
+                universe.setCameraToPlanet('Pluto');
+            }
+        });
+
+
         universe.renderScene();
         universe.run();
     };

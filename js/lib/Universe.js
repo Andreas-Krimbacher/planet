@@ -10,6 +10,7 @@
     trackballControls : null,
 
     planets : null,
+    cameraIsOnPlanet : null,
 
     stars : null,
 
@@ -53,6 +54,43 @@
         this.trackballControls.addEventListener( 'change', this.renderScene.bind(this) );
     },
 
+    resetCamera : function(){
+        if(this.cameraIsOnPlanet){
+            this.cameraIsOnPlanet.removeCamera();
+            this.cameraIsOnPlanet = null;
+        }
+
+        this.destroyCamera();
+
+        this._initCamera();
+        this.scene.add(this.camera);
+    },
+
+    setCameraToPlanet : function(planet){
+        if(this.planets[planet]){
+            if(this.cameraIsOnPlanet){
+                this.cameraIsOnPlanet.removeCamera();
+                this.cameraIsOnPlanet = null;
+            }
+
+            this.destroyCamera();
+
+            this._initCamera();
+            this.scene.add(this.camera);
+
+            this.planets[planet].setCamera(this.camera);
+            this.cameraIsOnPlanet = this.planets[planet];
+        }
+        else{
+            return 0;
+        }
+    },
+
+    destroyCamera : function(){
+        this.scene.remove(this.camera);
+        this.camera = null;
+    },
+
     run : function(){
 
         requestAnimationFrame( this.run.bind(this) );
@@ -81,8 +119,9 @@
 
     addPlanet : function(planet){
 
-        this.planets.push(planet);
+        this.planets[planet.planetDataObject.Name] = (planet);
         this.scene.add(planet.getObjectGroup());
+        this.scene.add(planet.getOrbit());
 
     },
 
@@ -113,9 +152,13 @@
         // Create an empty geometry object to hold the line vertex data
         var geometry = new THREE.Geometry();
         geometry.vertices.push(new THREE.Vector3(0, 0, 0));
-        if(type == 'x') geometry.vertices.push(new THREE.Vector3(5000, 0, 0));
-        if(type == 'y') geometry.vertices.push(new THREE.Vector3(0, 5000, 0));
-        if(type == 'z') geometry.vertices.push(new THREE.Vector3(0, 0, 5000));
+        if(type == 'x') geometry.vertices.push(new THREE.Vector3(15000, 0, 0));
+        if(type == 'y') geometry.vertices.push(new THREE.Vector3(0, 15000, 0));
+        if(type == 'z') geometry.vertices.push(new THREE.Vector3(0, 0, 15000));
+
+        if(type == '-x') geometry.vertices.push(new THREE.Vector3(-15000, 0, 0));
+        if(type == '-y') geometry.vertices.push(new THREE.Vector3(0, -15000, 0));
+        if(type == '-z') geometry.vertices.push(new THREE.Vector3(0, 0, -15000));
 
         material = new THREE.LineBasicMaterial( { color: 0xffccff, opacity: .5, linewidth: 2 } );
 
