@@ -70,7 +70,7 @@ PS.lib.Data = Class.extend({
                 "w": "",
                 "MJ2000": "",
                 "Periode": "",
-                "Durchm1": "13927",
+                "Durchm1": "30927",
                 "Durchm2": "",
                 img : 'sun.jpg'
             },

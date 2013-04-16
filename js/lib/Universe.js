@@ -123,7 +123,7 @@
         this.scene.add(planet.getObjectGroup());
         this.scene.add(planet.getOrbit());
 
-        this.scene.add(planet.line);
+        //this.scene.add(planet.perihelLine);
 
 
     },

@@ -25,7 +25,7 @@
         universe.addLight();
         universe.showAxis('x');
         universe.showAxis('y');
-//        universe.showAxis('z');
+        universe.showAxis('z');
 //        universe.showAxis('-x');
 //        universe.showAxis('-y');
 //        universe.showAxis('-z');
@@ -35,16 +35,34 @@
                 universe.resetCamera();
             }
             if(event.keyCode == 50){
-                universe.setCameraToPlanet('Erde');
+                universe.setCameraToPlanet('Merkur');
             }
 
             if(event.keyCode == 51){
-                universe.setCameraToPlanet('Mars');
+                universe.setCameraToPlanet('Venus');
             }
             if(event.keyCode == 52){
-                universe.setCameraToPlanet('Jupiter');
+                universe.setCameraToPlanet('Erde');
             }
             if(event.keyCode == 53){
+                universe.setCameraToPlanet('Mars');
+            }
+            if(event.keyCode == 54){
+                universe.setCameraToPlanet('Jupiter');
+            }
+            if(event.keyCode == 55){
+                universe.setCameraToPlanet('Saturn');
+            }
+            if(event.keyCode == 56){
+                universe.setCameraToPlanet('Uranus');
+            }
+            if(event.keyCode == 57){
+                universe.setCameraToPlanet('Neptun');
+            }
+            if(event.keyCode == 48){
+                universe.setCameraToPlanet('Ceres');
+            }
+            if(event.keyCode == 63){
                 universe.setCameraToPlanet('Pluto');
             }
         });
