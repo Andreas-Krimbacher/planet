@@ -123,6 +123,9 @@
         this.scene.add(planet.getObjectGroup());
         this.scene.add(planet.getOrbit());
 
+        this.scene.add(planet.line);
+
+
     },
 
     addStars : function(stars){

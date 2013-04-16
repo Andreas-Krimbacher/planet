@@ -43,15 +43,16 @@ PS.lib.Planet = Class.extend({
         this.planetDataObject = planetDataObject;
 //        this.planetDataObject.node = 0;
 //        this.planetDataObject.i = 0;
+//        this.planetDataObject.w = 0;
 //        this.planetDataObject.MJ2000 = 0;
-        this._createObjectGroup();
-        this._createOrbit();
-        this._alignOrbit();
+//        this.planetDataObject.e = -0.5;
+        this._createPlanet();
+
         if(planetDataObject.Periode) this._createRotMatrix();
 
     },
 
-    _createObjectGroup : function(){
+    _createPlanet : function(){
         var planetDataObject = this.planetDataObject;
 
         // create the sphere's material
@@ -71,6 +72,7 @@ PS.lib.Planet = Class.extend({
             material);
 
         this.objectGroup = new THREE.Object3D();
+        //this.objectGroup.matrixAutoUpdate = false;
 
         mesh.position.x = this.scaleDist(planetDataObject.a);
 
@@ -78,39 +80,40 @@ PS.lib.Planet = Class.extend({
 
         this.planetMesh = mesh;
 
+        this._createOrbit();
+        this._alignOrbit( this.objectGroup ,this.planetDataObject,this.orbit);
 
-        if(planetDataObject.moon){
-
-            this.objectGroupMoon = new THREE.Object3D();
-
-            if(planetDataObject.moon.Mond){
-            // create the sphere's material
-            if(planetDataObject.moon.Mond.img){
-                var texture = THREE.ImageUtils.loadTexture(this.IMAGE_PATH + planetDataObject.moon.Mond.img);
-                var material = new THREE.MeshBasicMaterial( { map: texture } );
-            }
-            else{
-                var material = new THREE.MeshLambertMaterial(
-                    {
-                        color: 0xE8251E
-                    });
-            }
-
-            var meshMoon = new THREE.Mesh(
-                new THREE.SphereGeometry(this.scaleRadius(planetDataObject.moon.Mond.Durchm1), this.segments, this.rings),
-                material);
-
-            meshMoon.position.x = this.scaleDist(parseFloat(planetDataObject.moon.Mond.a))+20;
-
-                this.objectGroupMoon.add(meshMoon);
-
-                this.objectGroupMoon.translateX(this.scaleDist(planetDataObject.a));
-
-                this.objectGroup.add(this.objectGroupMoon);
-
-            }
-
-        }
+//
+//        if(planetDataObject.moon){
+//
+//            this.objectGroupMoon = [];
+//            var moon,meshMoon;
+//
+//            for(var x in planetDataObject.moon){
+//                moon = new THREE.Object3D();
+//                // create the sphere's material
+//                if(planetDataObject.moon[x].img){
+//                    var texture = THREE.ImageUtils.loadTexture(this.IMAGE_PATH + planetDataObject.moon[x].img);
+//                    var material = new THREE.MeshBasicMaterial( { map: texture } );
+//                }
+//                else{
+//                    var material = new THREE.MeshLambertMaterial({color: 0xE8251E});
+//                }
+//
+//                meshMoon = new THREE.Mesh(
+//                    new THREE.SphereGeometry(this.scaleRadius(planetDataObject.moon[x].Durchm1), this.segments, this.rings),
+//                    material);
+//
+//                meshMoon.position.x = this.scaleDist(parseFloat(planetDataObject.moon[x].a)*100);
+//                moon.add(meshMoon);
+//                moon.translateX(this.scaleDist(planetDataObject.a));
+//                this.objectGroup.add(moon);
+//                this.objectGroupMoon.push(moon);
+//
+//                this._alignOrbit( moon , planetDataObject.moon[x]);
+//
+//            }
+//        }
 
     },
 
@@ -133,60 +136,78 @@ PS.lib.Planet = Class.extend({
         material = new THREE.LineDashedMaterial( { color: 0xffaa00, dashSize: 3, gapSize: 10, linewidth: 2 }, THREE.LinePieces );
 
         this.orbit =  new THREE.Object3D();
+        //this.orbit.matrixAutoUpdate = false;
         this.orbit.add(new THREE.Line( geometry, material ));
 
 
 
     },
 
-    _alignOrbit : function(){
+    _alignOrbit : function(object,options,orbit){
+
+
 
         // node
         var axis = new THREE.Vector3(0,1,0);
         var rotWorldMatrix = new THREE.Matrix4();
-        rotWorldMatrix.makeRotationAxis(axis.normalize(), this.planetDataObject.node*Math.PI/180);
-        rotWorldMatrix.multiply(this.objectGroup.matrix);        // pre-multiply
-        this.objectGroup.matrix = rotWorldMatrix;
-        this.objectGroup.rotation.setEulerFromRotationMatrix(this.objectGroup.matrix);
+        rotWorldMatrix.makeRotationAxis(axis.normalize(), options.node*Math.PI/180);
+        rotWorldMatrix.multiply(object.matrix);        // pre-multiply
+        object.matrix = rotWorldMatrix;
+        object.rotation.setEulerFromRotationMatrix(object.matrix);
 
         // i
-        var axis_x = Math.cos(this.planetDataObject.node*Math.PI/180);
-        var axis_y = Math.sin(this.planetDataObject.node*Math.PI/180);
-        var axis = new THREE.Vector3(axis_x,0,axis_y);
+        var axis_x = Math.cos(options.node*Math.PI/180);
+        var axis_z = Math.sin(options.node*Math.PI/180);
+        var axis = new THREE.Vector3(axis_x,0,axis_z);
         var rotWorldMatrix = new THREE.Matrix4();
-        rotWorldMatrix.makeRotationAxis(axis.normalize(), this.planetDataObject.i*Math.PI/180);
+        rotWorldMatrix.makeRotationAxis(axis.normalize(), options.i*Math.PI/180);
 
-        rotWorldMatrix.multiply(this.objectGroup.matrix);        // pre-multiply
-        this.objectGroup.matrix = rotWorldMatrix;
-        this.objectGroup.rotation.setEulerFromRotationMatrix(this.objectGroup.matrix);
+        rotWorldMatrix.multiply(object.matrix);        // pre-multiply
+        object.matrix = rotWorldMatrix;
+        object.rotation.setEulerFromRotationMatrix(object.matrix);
 
         // i orbit
-        rotWorldMatrix.multiply(this.orbit.matrix);        // pre-multiply
-        this.orbit.matrix = rotWorldMatrix;
-        this.orbit.rotation.setEulerFromRotationMatrix(this.orbit.matrix);
+        if(orbit){
+            rotWorldMatrix.multiply(orbit.matrix);        // pre-multiply
+            orbit.matrix = rotWorldMatrix;
+            orbit.rotation.setEulerFromRotationMatrix(this.orbit.matrix);
+        }
 
 
-        //M
-        var axis_z = Math.cos(this.planetDataObject.i*Math.PI/180);
-        axis_x = Math.sin(this.planetDataObject.i*Math.PI/180) * Math.sin(-this.planetDataObject.node*Math.PI/180);
-        axis_y = Math.sin(this.planetDataObject.i*Math.PI/180) * Math.cos(-this.planetDataObject.node*Math.PI/180);
+        //w
+        axis_y = Math.cos(options.i*Math.PI/180);
+        axis_x = Math.sin(options.i*Math.PI/180) * Math.sin(-options.node*Math.PI/180);
+        var axis_z = Math.sin(options.i*Math.PI/180) * Math.cos(-options.node*Math.PI/180);
 
-        var axis = new THREE.Vector3(axis_x,axis_z,axis_y);
+        var axis = new THREE.Vector3(axis_x,axis_y,axis_z);
         var rotWorldMatrix = new THREE.Matrix4();
-        rotWorldMatrix.makeRotationAxis(axis.normalize(), this.planetDataObject.MJ2000*Math.PI/180);
+        rotWorldMatrix.makeRotationAxis(axis.normalize(), (parseFloat(options.w))*Math.PI/180);
 
-        rotWorldMatrix.multiply(this.objectGroup.matrix);        // pre-multiply
-        this.objectGroup.matrix = rotWorldMatrix;
-        this.objectGroup.rotation.setEulerFromRotationMatrix(this.objectGroup.matrix);
+        rotWorldMatrix.multiply(object.matrix);        // pre-multiply
+        object.matrix = rotWorldMatrix;
+        object.rotation.setEulerFromRotationMatrix(object.matrix);
+
+        //e
+        object.updateMatrixWorld();
+        //object.updateMatrix();
+
+        var peri = new THREE.Vector3();
+        peri.getPositionFromMatrix(object.children[0].matrixWorld);
+        peri.setLength(this.scaleDist(options.a*options.e));
+
+
+        object.position = peri.clone();
+        orbit.position = peri.clone();
+
 
     },
 
     _createRotMatrix : function(){
-        var axis_z = Math.cos(this.planetDataObject.i*Math.PI/180);
+        var axis_y = Math.cos(this.planetDataObject.i*Math.PI/180);
         var axis_x = Math.sin(this.planetDataObject.i*Math.PI/180) * Math.sin(-this.planetDataObject.node*Math.PI/180);
-        var axis_y = Math.sin(this.planetDataObject.i*Math.PI/180) * Math.cos(-this.planetDataObject.node*Math.PI/180);
+        var axis_z = Math.sin(this.planetDataObject.i*Math.PI/180) * Math.cos(-this.planetDataObject.node*Math.PI/180);
 
-        var axis = new THREE.Vector3(axis_x,axis_z,axis_y);
+        var axis = new THREE.Vector3(axis_x,axis_y,axis_z);
         var rotWorldMatrix = new THREE.Matrix4();
         rotWorldMatrix.makeRotationAxis(axis.normalize(), this.scalePeriod(this.planetDataObject.Periode));
 
@@ -240,9 +261,9 @@ PS.lib.Planet = Class.extend({
             var rotWorldMatrix2 = new THREE.Matrix4();
             rotWorldMatrix2.makeRotationAxis(axis.normalize(), 0.1);
 
-            rotWorldMatrix2.multiply(this.objectGroupMoon.matrix);        // pre-multiply
-            this.objectGroupMoon.matrix = rotWorldMatrix2;
-            this.objectGroupMoon.rotation.setEulerFromRotationMatrix(this.objectGroupMoon.matrix);
+            rotWorldMatrix2.multiply(this.objectGroupMoon[0].matrix);        // pre-multiply
+            this.objectGroupMoon[0].matrix = rotWorldMatrix2;
+            this.objectGroupMoon[0].rotation.setEulerFromRotationMatrix(this.objectGroupMoon[0].matrix);
 
 
         }

@@ -23,8 +23,8 @@
         universe.addStars(new PS.lib.Stars(15000).getStars());
 
         universe.addLight();
-//        universe.showAxis('x');
-//        universe.showAxis('y');
+        universe.showAxis('x');
+        universe.showAxis('y');
 //        universe.showAxis('z');
 //        universe.showAxis('-x');
 //        universe.showAxis('-y');
