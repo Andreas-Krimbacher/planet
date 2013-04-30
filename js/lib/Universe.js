@@ -10,9 +10,13 @@
     trackballControls : null,
 
     planets : null,
+    planetMove : false,
+    sun : null,
     cameraIsOnPlanet : null,
 
     stars : null,
+
+    date : new Date(2000,0,1),
 
 
     // ==== functions ====
@@ -31,6 +35,8 @@
         this.renderer.setSize(this.container.width(), this.container.height());
         this.container.append(this.renderer.domElement);
 
+
+
 	},
 
     _initCamera : function(){
@@ -38,20 +44,9 @@
         this.camera.position.x = -600;
         this.camera.position.y = 600;
         this.camera.position.z = 600;
-        this.trackballControls = new THREE.TrackballControls( this.camera );
-        this.trackballControls.rotateSpeed = 1.0;
-        this.trackballControls.zoomSpeed = 1.2;
-        this.trackballControls.panSpeed = 0.8;
 
-        this.trackballControls.noZoom = false;
-        this.trackballControls.noPan = false;
-
-        this.trackballControls.staticMoving = true;
-        this.trackballControls.dynamicDampingFactor = 0.3;
-
-        this.trackballControls.keys = [ 65, 83, 68 ];
-
-        this.trackballControls.addEventListener( 'change', this.renderScene.bind(this) );
+        this.orbitControl = new THREE.OrbitControls( this.camera );
+        this.orbitControl.addEventListener( 'change', this.renderScene.bind(this) );
     },
 
     resetCamera : function(){
@@ -95,13 +90,40 @@
 
         requestAnimationFrame( this.run.bind(this) );
         this.renderScene();
-        this.trackballControls.update();
+        this.orbitControl.update();
+
         for(var x in this.planets){
-            this.planets[x].update();
+            this.planets[x].updateCamera();
         }
 
-    },
 
+        if(this.planetMove){
+            for(var x in this.planets){
+                this.planets[x].updateForward();
+            }
+
+            this.date.setDate(this.date.getDate() + 1);
+            $('#year').html(this.date.toUTCString());
+        }
+    },
+    startPlanetMove : function(){
+        this.planetMove = true;
+    },
+    stopPlanetMove : function(){
+        this.planetMove = false;
+    },
+    setDate : function(date){
+        if(this.planetMove) this.stopPlanetMove();
+        var diff = date - this.date;
+        diffDays = Math.round(diff/(24*60*60*1000));
+
+            for(var x in this.planets){
+                this.planets[x].moveDays(diffDays);
+            }
+
+        this.date.setDate(this.date.getDate() + diffDays);
+        $('#year').html(this.date.toUTCString());
+    },
 	renderScene : function(){
 
         // Render the scene
@@ -119,7 +141,8 @@
 
     addPlanet : function(planet){
 
-        this.planets[planet.planetDataObject.Name] = (planet);
+        if(planet.planetDataObject.Name != 'Sonne') this.planets[planet.planetDataObject.Name] = planet;
+        else this.sun = planet;
         this.scene.add(planet.getObjectGroup());
         this.scene.add(planet.getOrbit());
 
@@ -168,7 +191,53 @@
         // Create the line
         this.scene.add(new THREE.Line( geometry, material ));
 
+    },
+    showPlane : function(){
+        var geometry = new THREE.PlaneGeometry( 150000, 150000 );
+        var material = new THREE.MeshBasicMaterial( { color: 0x0000ff, opacity: 0.2  } );
+        material.transparent = true;
+        material.side = THREE.DoubleSide;
+        var mesh = new THREE.Mesh( geometry, material );
+        mesh.rotation.x = Math.PI/2;
+        this.scene.add( mesh );
+    },
+    hideOrbits : function(){
+        for(var x in this.planets){
+            this.planets[x].orbit.children[0].visible = false;
+            for(var y in this.planets[x].orbitMoon){
+                this.planets[x].orbitMoon[y].children[0].visible = false;
+            }
+        }
+    },
+    showOrbits : function(){
+        for(var x in this.planets){
+            this.planets[x].orbit.children[0].visible = true;
+            for(var y in this.planets[x].orbitMoon){
+                this.planets[x].orbitMoon[y].children[0].visible = true;
+            }
+        }
+    },
+    showPlanetOrbit : function(planet,moon){
+        this.planets[planet].orbit.children[0].visible = true;
+        if(moon){
+            for(var x in this.planets[planet].orbitMoon){
+                this.planets[planet].orbitMoon[x].children[0].visible = true;
+            }
+        }
+    },
+    hidePlanetOrbit : function(planet,moon){
+        this.planets[planet].orbit.children[0].visible = false;
+        if(moon){
+            for(var x in this.planets[planet].orbitMoon){
+                this.planets[planet].orbitMoon[x].children[0].visible = false;
+            }
+        }
+    },
+    showMoonOrbit : function(planet,moon){
+        this.planets[planet].orbitMoon[moon].children[0].visible = true;
+    },
+    hideMoonOrbit : function(planet,moon){
+        this.planets[planet].orbitMoon[moon].children[0].visible = false;
     }
-	
   
 });

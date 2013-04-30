@@ -75,8 +75,8 @@ PS.lib.Data = Class.extend({
                 img : 'sun.jpg'
             },
             {
-                "Name": "Merkur",
-                "Planet": "Merkur",
+                "Name": "Mercury",
+                "Planet": "Mercury",
                 "Status": "Planet",
                 "a": "57910",
                 "e": "0.2056",
@@ -105,8 +105,8 @@ PS.lib.Data = Class.extend({
                 img : 'venus.jpg'
             },
             {
-                "Name": "Erde",
-                "Planet": "Erde",
+                "Name": "Earth",
+                "Planet": "Earth",
                 "Status": "Planet",
                 "a": "149600",
                 "e": "0.0167",
@@ -181,8 +181,8 @@ PS.lib.Data = Class.extend({
                 img : 'uranus.jpg'
             },
             {
-                "Name": "Neptun",
-                "Planet": "Neptun",
+                "Name": "Neptune",
+                "Planet": "Neptune",
                 "Status": "Planet",
                 "a": "4498317",
                 "e": "0.0086",
@@ -193,7 +193,7 @@ PS.lib.Data = Class.extend({
                 "Periode": "60190.536",
                 "Durchm1": "49000",
                 "Durchm2": "",
-                img : 'neptune.jpg'
+                img : 'Neptune.jpg'
             },
             {
                 "Name": "Ceres",
@@ -266,8 +266,8 @@ PS.lib.Data = Class.extend({
                 "Durchm2": ""
             },
             {
-                "Name": "Mond",
-                "Planet": "Erde",
+                "Name": "Moon",
+                "Planet": "Earth",
                 "Status": "Mond",
                 "a": "384.4",
                 "e": "0.0554",
@@ -519,7 +519,7 @@ PS.lib.Data = Class.extend({
             },
             {
                 "Name": "Triton",
-                "Planet": "Neptun",
+                "Planet": "Neptune",
                 "Status": "Mond",
                 "a": "354.8",
                 "e": "0",
@@ -533,7 +533,7 @@ PS.lib.Data = Class.extend({
             },
             {
                 "Name": "Nereid",
-                "Planet": "Neptun",
+                "Planet": "Neptune",
                 "Status": "Mond",
                 "a": "5513.4",
                 "e": "0.7507",
@@ -547,7 +547,7 @@ PS.lib.Data = Class.extend({
             },
             {
                 "Name": "Proteus",
-                "Planet": "Neptun",
+                "Planet": "Neptune",
                 "Status": "Mond",
                 "a": "117.647",
                 "e": "0.0005",
