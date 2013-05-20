@@ -1,0 +1,104 @@
+(function($) {
+    // ==== private variables ====
+
+
+    // ==== private functions ====
+
+
+    // ==== public functions ====
+    var initialize = function() {
+
+        var universe = new PS.lib.Universe('webglCanvas');
+
+        planetData = {
+//            sun : {
+//                radius : 1392000,
+//                dist : 0,
+//                color : 0xEDF417,
+//                rotSpeed : 1
+//            },
+            merkur : {
+                radius : 2439,
+                dist : 57909175,
+                color : 0xE8971E,
+                rotSpeed : 0.5,
+		img : 'mercury.jpg'
+            },
+            venus : {
+                radius : 6051,
+                dist : 108208930,
+                color : 0x755F41,
+                rotSpeed : 0.2
+		img : 'venus.jpg'
+            },
+            earth : {
+                radius : 6378,
+                dist : 149597890,
+                color : 0x386677,
+                rotSpeed : 0.1,
+                img : 'earth.jpg'
+            },
+            mars : {
+                radius : 3397,
+                dist : 227936640,
+                color : 0xE8251E,
+                rotSpeed : 0.7,
+                img : 'mars.jpg'
+            },
+            jupiter : {
+                radius : 71492,
+                dist : 778412020,
+                color : 0xF5B781,
+                rotSpeed : 2
+            },
+            saturn : {
+                radius : 60267,
+                dist : 1426725400,
+                color : 0xC8A98F,
+                rotSpeed : 0.3,
+		img : 'saturn.jpg'
+            },
+            uranus : {
+                radius : 25559,
+                dist : 2870972200,
+                color : 0x7CD5F8,
+                rotSpeed : 0.4,
+		img : 'uranus.jpg'
+            },
+            neptune : {
+                radius : 24764,
+                dist : 4498252900,
+                color : 0x64A6BF,
+                rotSpeed : 0.9,
+		img : 'neptune.jpg'
+            }
+        };
+
+        var radiusScale = 1000;
+        var distScale = 1000000;
+
+
+        var planets = [];
+
+        for(var x in planetData){
+            planets.push(new  PS.lib.Planet(planetData[x].radius/radiusScale,planetData[x].img,planetData[x].dist/distScale,planetData[x].rotSpeed))
+            universe.addPlanet(planets[planets.length-1]);
+            universe.addObject(planets[planets.length-1].getOrbit());
+        }
+        universe.addLight();
+        universe.renderScene();
+        universe.run();
+    };
+
+
+
+        //==== Return ====
+    window.PS = {
+        // ==== public variables ====
+        VERSION_NUMBER: "0.1.0",
+        lib : {},
+
+        // ==== reveal public functions ====
+        initialize : initialize
+    };
+})($);
