@@ -1,7 +1,7 @@
 ﻿PS.lib.Universe = Class.extend({
-	// ==== variables ====
-	
-	CLASS_NAME: "PS.Universe",
+    // ==== variables ====
+
+    CLASS_NAME: "PS.Universe",
 
     renderer : null,
     scene : null,
@@ -18,9 +18,17 @@
 
     date : new Date(2000,0,1),
 
+    dwarfPlanetsVisible: true,
+    moonVisible : true,
+    orbitVisible : true,
+
+    direction : 'forward',
+
+    speed : 0,
+
 
     // ==== functions ====
-	init : function(containerDiv){
+    init : function(containerDiv){
 
         this.planets = [];
 
@@ -37,16 +45,19 @@
 
 
 
-	},
+    },
 
     _initCamera : function(){
-        this.camera = new THREE.PerspectiveCamera( 45,  this.container.width() /  this.container.height(), 1, 100000 );
-        this.camera.position.x = -600;
-        this.camera.position.y = 600;
-        this.camera.position.z = 600;
+        this.camera = new THREE.PerspectiveCamera( 45,  this.container.width() /  this.container.height(), 1, 10000000000 );
+        this.camera.position.x = -600000;
+        this.camera.position.y = 600000;
+        this.camera.position.z = 600000;
 
-        this.orbitControl = new THREE.OrbitControls( this.camera );
+        this.orbitControl = new THREE.OrbitControls( this.camera , document.getElementById('webglOrbitControlCanvas'));
         this.orbitControl.addEventListener( 'change', this.renderScene.bind(this) );
+//
+//        this.orbitControl = new THREE.TrackballControls( this.camera , document.getElementById('webglOrbitControlCanvas'));
+//        this.orbitControl.addEventListener( 'change', this.renderScene.bind(this) );
     },
 
     resetCamera : function(){
@@ -59,6 +70,11 @@
 
         this._initCamera();
         this.scene.add(this.camera);
+    },
+
+    alertCameraPosition : function(){
+        alert('x,y,z:' + Math.round(this.camera.position.x) + ',' + Math.round(this.camera.position.y) + ',' + Math.round(this.camera.position.z));
+
     },
 
     setCameraToPlanet : function(planet){
@@ -98,33 +114,58 @@
 
 
         if(this.planetMove){
-            for(var x in this.planets){
-                this.planets[x].updateForward();
+            if(this.direction == 'forward'){
+                for(var x in this.planets){
+                    this.planets[x].updateForward(this.speed);
+                }
+
+                if(this.speed == 1) this.date.setDate(this.date.getDate() + 1);
+                if(this.speed == 2) this.date.setDate(this.date.getDate() + 10);
+                if(this.speed == 3) this.date.setDate(this.date.getDate() + 100);
+            }
+            if(this.direction == 'backward'){
+                for(var x in this.planets){
+                    this.planets[x].updateBackward(this.speed);
+                }
+
+                if(this.speed == 1) this.date.setDate(this.date.getDate() - 1);
+                if(this.speed == 2) this.date.setDate(this.date.getDate() - 10);
+                if(this.speed == 3) this.date.setDate(this.date.getDate() - 100);
             }
 
-            this.date.setDate(this.date.getDate() + 1);
-            $('#year').html(this.date.toUTCString());
+            PS.updateTimeSlider(this.date);
         }
     },
     startPlanetMove : function(){
         this.planetMove = true;
     },
     stopPlanetMove : function(){
+        this.speed = 0;
         this.planetMove = false;
     },
-    setDate : function(date){
+    setDate : function(date,dontUpdateSlider){
         if(this.planetMove) this.stopPlanetMove();
         var diff = date - this.date;
         diffDays = Math.round(diff/(24*60*60*1000));
 
-            for(var x in this.planets){
-                this.planets[x].moveDays(diffDays);
-            }
+        for(var x in this.planets){
+            this.planets[x].moveDays(diffDays);
+        }
 
         this.date.setDate(this.date.getDate() + diffDays);
-        $('#year').html(this.date.toUTCString());
+        if(!dontUpdateSlider) PS.updateTimeSlider(this.date);
     },
-	renderScene : function(){
+    forward : function(speed){
+        this.direction = 'forward';
+        this.speed = speed;
+        if(!this.planetMove) this.startPlanetMove();
+    },
+    backward : function(speed){
+        this.direction = 'backward';
+        this.speed = speed;
+        if(!this.planetMove) this.startPlanetMove();
+    },
+    renderScene : function(){
 
         // Render the scene
         this.renderer.render( this.scene, this.camera );
@@ -178,7 +219,7 @@
         // Create an empty geometry object to hold the line vertex data
         var geometry = new THREE.Geometry();
         geometry.vertices.push(new THREE.Vector3(0, 0, 0));
-        if(type == 'x') geometry.vertices.push(new THREE.Vector3(15000, 0, 0));
+        if(type == 'x') geometry.vertices.push(new THREE.Vector3(1500000, 0, 0));
         if(type == 'y') geometry.vertices.push(new THREE.Vector3(0, 15000, 0));
         if(type == 'z') geometry.vertices.push(new THREE.Vector3(0, 0, 15000));
 
@@ -193,8 +234,8 @@
 
     },
     showPlane : function(){
-        var geometry = new THREE.PlaneGeometry( 150000, 150000 );
-        var material = new THREE.MeshBasicMaterial( { color: 0x0000ff, opacity: 0.2  } );
+        var geometry = new THREE.PlaneGeometry( 15000000, 15000000 );
+        var material = new THREE.MeshBasicMaterial( { color: 0x00ff00, opacity: 0.1  } );
         material.transparent = true;
         material.side = THREE.DoubleSide;
         var mesh = new THREE.Mesh( geometry, material );
@@ -202,26 +243,109 @@
         this.scene.add( mesh );
     },
     hideOrbits : function(){
+        this.orbitVisible = false;
         for(var x in this.planets){
+
             this.planets[x].orbit.children[0].visible = false;
             for(var y in this.planets[x].orbitMoon){
                 this.planets[x].orbitMoon[y].children[0].visible = false;
             }
+
+        }
+    },
+    clearOrbits : function(){
+        for(var x in this.planets){
+
+            this.planets[x].orbit.children[0].visible = false;
+            for(var y in this.planets[x].orbitMoon){
+                this.planets[x].orbitMoon[y].children[0].visible = false;
+            }
+
         }
     },
     showOrbits : function(){
+        this.orbitVisible = true;
         for(var x in this.planets){
-            this.planets[x].orbit.children[0].visible = true;
-            for(var y in this.planets[x].orbitMoon){
-                this.planets[x].orbitMoon[y].children[0].visible = true;
+            if(this.planets[x].planetDataObject.Status != 'Zwergplanet' || this.dwarfPlanetsVisible){
+                this.planets[x].orbit.children[0].visible = true;
+                if(this.moonVisible){
+                    for(var y in this.planets[x].orbitMoon){
+                        this.planets[x].orbitMoon[y].children[0].visible = true;
+                    }
+                }
+            }
+        }
+    },
+    hideDwarf : function(){
+        this.dwarfPlanetsVisible = false;
+        for(var x in this.planets){
+            if(this.planets[x].planetDataObject.Status == 'Zwergplanet'){
+                this.planets[x].planetMesh.visible = false;
+                this.planets[x].orbit.children[0].visible = false;
+                if(this.planets[x].objectGroupMoon){
+                    for(var y in this.planets[x].orbitMoon){
+                        this.planets[x].orbitMoon[y].children[0].visible = false;
+                    }
+                    for(var y in this.planets[x].objectGroupMoon){
+                        this.planets[x].objectGroupMoon[y].children[0].visible = false;
+                    }
+                }
+            }
+        }
+    },
+    showDwarf : function(){
+        this.dwarfPlanetsVisible = true;
+        for(var x in this.planets){
+            if(this.planets[x].planetDataObject.Status == 'Zwergplanet'){
+                this.planets[x].planetMesh.visible = true;
+                this.planets[x].orbit.children[0].visible = true;
+                if(this.planets[x].objectGroupMoon){
+                    for(var y in this.planets[x].orbitMoon){
+                        this.planets[x].orbitMoon[y].children[0].visible = true;
+                    }
+                    for(var y in this.planets[x].objectGroupMoon){
+                        this.planets[x].objectGroupMoon[y].children[0].visible = true;
+                    }
+                }
+            }
+        }
+    },
+    hideMoons : function(){
+        this.moonVisible = false;
+        for(var x in this.planets){
+            if(this.planets[x].objectGroupMoon){
+                for(var y in this.planets[x].orbitMoon){
+                    this.planets[x].orbitMoon[y].children[0].visible = false;
+                }
+                for(var y in this.planets[x].objectGroupMoon){
+                    this.planets[x].objectGroupMoon[y].children[0].visible = false;
+                }
+            }
+        }
+    },
+    showMoons : function(){
+        this.moonVisible = true;
+        for(var x in this.planets){
+            if(this.planets[x].objectGroupMoon){
+                if(this.planets[x].planetDataObject.Status != 'Zwergplanet' || this.dwarfPlanetsVisible){
+                    for(var y in this.planets[x].orbitMoon){
+                        this.planets[x].orbitMoon[y].children[0].visible = true;
+                    }
+                    for(var y in this.planets[x].objectGroupMoon){
+                        this.planets[x].objectGroupMoon[y].children[0].visible = true;
+                    }
+                }
             }
         }
     },
     showPlanetOrbit : function(planet,moon){
-        this.planets[planet].orbit.children[0].visible = true;
-        if(moon){
-            for(var x in this.planets[planet].orbitMoon){
-                this.planets[planet].orbitMoon[x].children[0].visible = true;
+        if(!this.orbitVisible) return;
+        if(this.planets[planet].planetDataObject.Status != 'Zwergplanet' || this.dwarfPlanetsVisible){
+            this.planets[planet].orbit.children[0].visible = true;
+            if(moon && this.moonVisible){
+                for(var x in this.planets[planet].orbitMoon){
+                    this.planets[planet].orbitMoon[x].children[0].visible = true;
+                }
             }
         }
     },
@@ -234,10 +358,23 @@
         }
     },
     showMoonOrbit : function(planet,moon){
-        this.planets[planet].orbitMoon[moon].children[0].visible = true;
+        if(!this.moonVisible || !this.orbitVisible) return;
+        if(this.planets[planet].planetDataObject.Status != 'Zwergplanet' || this.dwarfPlanetsVisible){
+            this.planets[planet].orbitMoon[moon].children[0].visible = true;
+        }
     },
     hideMoonOrbit : function(planet,moon){
         this.planets[planet].orbitMoon[moon].children[0].visible = false;
+    },
+    moveCamera : function(direction){
+        switch(direction){
+            case "up":   this.orbitControl.rotateUp(0.05); break;
+            case "down":   this.orbitControl.rotateDown(0.05); break;
+            case "left":   this.orbitControl.rotateLeft(0.05); break;
+            case "right":   this.orbitControl.rotateRight(0.05); break;
+            case "plus":   this.orbitControl.zoomIn(2); break;
+            case "minus":   this.orbitControl.zoomOut(2); break;
+        }
     }
-  
+
 });
