@@ -7,7 +7,8 @@
     scene : null,
     camera : null,
     container : null,
-    trackballControls : null,
+    orbitControl : null,
+    panControl : null,
 
     planets : null,
     planetMove : false,
@@ -34,7 +35,7 @@
 
         this.container = $('#'+containerDiv);
 
-        this._initCamera();
+        this._initCamera(-600000,600000,600000);
 
         this.scene = new THREE.Scene();
         this.scene.add(this.camera);
@@ -47,20 +48,22 @@
 
     },
 
-    _initCamera : function(){
+    _initCamera : function(x,y,z){
         this.camera = new THREE.PerspectiveCamera( 45,  this.container.width() /  this.container.height(), 1, 10000000000 );
-        this.camera.position.x = -600000;
-        this.camera.position.y = 600000;
-        this.camera.position.z = 600000;
+        this.camera.position.x = x;
+        this.camera.position.y = y;
+        this.camera.position.z = z;
 
         this.orbitControl = new THREE.OrbitControls( this.camera , document.getElementById('webglOrbitControlCanvas'));
-        this.orbitControl.addEventListener( 'change', this.renderScene.bind(this) );
-//
-//        this.orbitControl = new THREE.TrackballControls( this.camera , document.getElementById('webglOrbitControlCanvas'));
-//        this.orbitControl.addEventListener( 'change', this.renderScene.bind(this) );
+        this.orbitControl.maxDist = 25000000;
+
+        this.panControl = new THREE.TrackballControls( this.camera , document.getElementById('webglOrbitControlCanvas'));
+        this.panControl.noRotate = true;
+        this.panControl.noZoom = true;
+        this.panControl.maxDistance = 25000000;
     },
 
-    resetCamera : function(){
+    resetCamera : function(x,y,z){
         if(this.cameraIsOnPlanet){
             this.cameraIsOnPlanet.removeCamera();
             this.cameraIsOnPlanet = null;
@@ -68,7 +71,9 @@
 
         this.destroyCamera();
 
-        this._initCamera();
+        if(x) this._initCamera(x,y,z);
+        else this._initCamera(-600000,600000,600000);
+
         this.scene.add(this.camera);
     },
 
@@ -79,17 +84,9 @@
 
     setCameraToPlanet : function(planet){
         if(this.planets[planet]){
-            if(this.cameraIsOnPlanet){
-                this.cameraIsOnPlanet.removeCamera();
-                this.cameraIsOnPlanet = null;
-            }
+            this.resetCamera();
 
-            this.destroyCamera();
-
-            this._initCamera();
-            this.scene.add(this.camera);
-
-            this.planets[planet].setCamera(this.camera);
+            this.planets[planet].setCamera({camera: this.camera, orbitControl: this.orbitControl});
             this.cameraIsOnPlanet = this.planets[planet];
         }
         else{
@@ -107,16 +104,12 @@
         requestAnimationFrame( this.run.bind(this) );
         this.renderScene();
         this.orbitControl.update();
-
-        for(var x in this.planets){
-            this.planets[x].updateCamera();
-        }
-
+        this.panControl.update();
 
         if(this.planetMove){
             if(this.direction == 'forward'){
                 for(var x in this.planets){
-                    this.planets[x].updateForward(this.speed);
+                    this.planets[x].updateForward(this.speed,this.moonVisible);
                 }
 
                 if(this.speed == 1) this.date.setDate(this.date.getDate() + 1);
@@ -125,7 +118,7 @@
             }
             if(this.direction == 'backward'){
                 for(var x in this.planets){
-                    this.planets[x].updateBackward(this.speed);
+                    this.planets[x].updateBackward(this.speed,this.moonVisible);
                 }
 
                 if(this.speed == 1) this.date.setDate(this.date.getDate() - 1);
@@ -135,9 +128,6 @@
 
             PS.updateTimeSlider(this.date);
         }
-    },
-    startPlanetMove : function(){
-        this.planetMove = true;
     },
     stopPlanetMove : function(){
         this.speed = 0;
@@ -158,20 +148,16 @@
     forward : function(speed){
         this.direction = 'forward';
         this.speed = speed;
-        if(!this.planetMove) this.startPlanetMove();
+        if(!this.planetMove) this.planetMove = true;
     },
     backward : function(speed){
         this.direction = 'backward';
         this.speed = speed;
-        if(!this.planetMove) this.startPlanetMove();
+        if(!this.planetMove) this.planetMove = true;
     },
     renderScene : function(){
-
-        // Render the scene
+       // Render the scene
         this.renderer.render( this.scene, this.camera );
-
-
-
     },
 
     addObject : function(object){
@@ -375,6 +361,10 @@
             case "plus":   this.orbitControl.zoomIn(2); break;
             case "minus":   this.orbitControl.zoomOut(2); break;
         }
+    },
+    adjustVisibility : function(planet){
+        if(this.planets[planet].planetDataObject.Status == 'Zwergplanet') this.showDwarf();
+        if(this.planets[planet].planetDataObject.Status == 'Mond') this.showMoons();
     }
 
 });

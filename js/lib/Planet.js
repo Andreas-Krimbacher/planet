@@ -5,6 +5,7 @@ PS.lib.Planet = Class.extend({
     planetDataObject : null,
     planetMesh : null,
     objectGroup : null,
+    cameraObjectGroup : null,
     objectGroupMoon : null,
     orbit : null,
     orbitMoon : null,
@@ -27,7 +28,6 @@ PS.lib.Planet = Class.extend({
     rings : 16,
     angle : 0,
     camera : null,
-    cameraFirstSet : false,
     distScale : null,
     radiusScale : null,
     periodScale : null,
@@ -46,12 +46,6 @@ PS.lib.Planet = Class.extend({
         this.periodScaleMoon = {type: "linear", value : 0.1};
         this.planetDataObject = planetDataObject;
 
-
-// this.planetDataObject.node = 0;
-// this.planetDataObject.i = 0;
-// this.planetDataObject.omega = 0;
-// this.planetDataObject.MJ2000_True = 0;
-// this.planetDataObject.e = -0.5;
         this._createPlanet();
     },
     _createPlanet : function(){
@@ -79,6 +73,11 @@ PS.lib.Planet = Class.extend({
         mesh.position.x = this.scaleDist(planetDataObject.a);
         this.objectGroup.add(mesh);
         this.planetMesh = mesh;
+
+        this.cameraObjectGroup = new THREE.Object3D();
+        this.cameraObjectGroup.position.x = this.scaleDist(planetDataObject.a);
+        this.objectGroup.add(this.cameraObjectGroup);
+
 
 
         if(this.planetDataObject.Status != 'Sonne') this.orbit = this._createOrbit(this.scaleDist(planetDataObject.a));
@@ -245,8 +244,8 @@ PS.lib.Planet = Class.extend({
         var rotWorldMatrixForwardSpeed3 = new THREE.Matrix4();
         var rotWorldMatrixBackwardSpeed3 = new THREE.Matrix4();
         if(moonTranslateX){
-            rotWorldMatrixForwardSpeed1.makeRotationAxis(rotAxis, (2*Math.PI) / options.Periode * (0.1));
-            rotWorldMatrixBackwardSpeed1.makeRotationAxis(rotAxis, - (2*Math.PI) / options.Periode * (0.1));
+            rotWorldMatrixForwardSpeed1.makeRotationAxis(rotAxis, (2*Math.PI) / options.Periode * (0.05));
+            rotWorldMatrixBackwardSpeed1.makeRotationAxis(rotAxis, - (2*Math.PI) / options.Periode * (0.05));
             this.rotWorldMatrixMoonForwardSpeed1[options.Name] = rotWorldMatrixForwardSpeed1;
             this.rotWorldMatrixMoonBackwardSpeed1[options.Name] = rotWorldMatrixBackwardSpeed1;
             rotWorldMatrixForwardSpeed2.makeRotationAxis(rotAxis, (2*Math.PI) / options.Periode * (1));
@@ -260,8 +259,8 @@ PS.lib.Planet = Class.extend({
             this.rotAxisMoon[options.Name] = rotAxis;
         }
         else{
-            rotWorldMatrixForwardSpeed1.makeRotationAxis(rotAxis, (2*Math.PI) / options.Periode);
-            rotWorldMatrixBackwardSpeed1.makeRotationAxis(rotAxis, - (2*Math.PI) / options.Periode);
+            rotWorldMatrixForwardSpeed1.makeRotationAxis(rotAxis, (2*Math.PI) * (0.5) / options.Periode);
+            rotWorldMatrixBackwardSpeed1.makeRotationAxis(rotAxis, - (2*Math.PI) * (0.5) / options.Periode);
             this.rotWorldMatrixForwardSpeed1 = rotWorldMatrixForwardSpeed1;
             this.rotWorldMatrixBackwardSpeed1 = rotWorldMatrixBackwardSpeed1;
             rotWorldMatrixForwardSpeed2.makeRotationAxis(rotAxis, (2*Math.PI) * (10) / options.Periode);
@@ -306,16 +305,22 @@ PS.lib.Planet = Class.extend({
         return this.orbit;
 
     },
-    updateForward : function(speed){
+    updateForward : function(speed,animateMoons){
+
+        var oldPosition,newPosition;
+
         var rotWorldMatrix;
-        if(this.rotWorldMatrixForwardSpeed1){
+        if(animateMoons && this.rotWorldMatrixForwardSpeed1){
+
+
             if(speed == 2) rotWorldMatrix = this.rotWorldMatrixForwardSpeed2.clone();
             else if(speed == 3) rotWorldMatrix = this.rotWorldMatrixForwardSpeed3.clone();
             else rotWorldMatrix = this.rotWorldMatrixForwardSpeed1.clone();
-            
+
             rotWorldMatrix.multiply(this.objectGroup.matrix); // pre-multiply
             this.objectGroup.matrix = rotWorldMatrix;
             this.objectGroup.rotation.setEulerFromRotationMatrix(this.objectGroup.matrix);
+
         }
 
         if(this.rotWorldMatrixMoonForwardSpeed1){
@@ -323,14 +328,14 @@ PS.lib.Planet = Class.extend({
                 if(speed == 2) rotWorldMatrix = this.rotWorldMatrixMoonForwardSpeed2[x].clone();
                 else if(speed == 3) rotWorldMatrix = this.rotWorldMatrixMoonForwardSpeed3[x].clone();
                 else rotWorldMatrix = this.rotWorldMatrixMoonForwardSpeed1[x].clone();
-                
+
                 rotWorldMatrix.multiply(this.objectGroupMoon[x].matrix);
                 this.objectGroupMoon[x].matrix = rotWorldMatrix;
                 this.objectGroupMoon[x].rotation.setEulerFromRotationMatrix(this.objectGroupMoon[x].matrix);
             }
         }
     },
-    updateBackward : function(speed){
+    updateBackward : function(speed,animateMoons){
         var rotWorldMatrix;
         if(this.rotWorldMatrixBackwardSpeed1){
             if(speed == 2) rotWorldMatrix = this.rotWorldMatrixBackwardSpeed2.clone();
@@ -342,7 +347,7 @@ PS.lib.Planet = Class.extend({
             this.objectGroup.rotation.setEulerFromRotationMatrix(this.objectGroup.matrix);
         }
 
-        if(this.rotWorldMatrixMoonBackwardSpeed1){
+        if(animateMoons && this.rotWorldMatrixMoonBackwardSpeed1){
             for(var x in this.rotWorldMatrixMoonBackwardSpeed1){
                 if(speed == 2) rotWorldMatrix = this.rotWorldMatrixMoonBackwardSpeed2[x].clone();
                 else if(speed == 3) rotWorldMatrix = this.rotWorldMatrixMoonBackwardSpeed3[x].clone();
@@ -354,27 +359,20 @@ PS.lib.Planet = Class.extend({
             }
         }
     },
-    updateCamera : function(){
-
-        if(this.camera){
-            var vectorToCenter = new THREE.Vector3();
-            vectorToCenter.getPositionFromMatrix(this.objectGroup.children[0].matrixWorld);
-            vectorToCenter.setLength(vectorToCenter.length()+(this.scaleRadius(this.planetDataObject.Durchm1*3)));
-            vectorToCenter.y += (this.scaleRadius(this.planetDataObject.Durchm1))/3;
-            if(this.cameraFirstSet){
-                this.camera.position.y = vectorToCenter.y;
-                this.cameraFirstSet = false;
-            }
-            this.camera.position.x = vectorToCenter.x;
-            this.camera.position.z = vectorToCenter.z;
-        }
-
-    },
     setCamera : function(camera){
-        this.cameraFirstSet = true;
+
+
+        this.cameraObjectGroup.add(camera.camera);
+
+        var vectorToCenter = new THREE.Vector3().getPositionFromMatrix(this.planetMesh.matrixWorld);
+        vectorToCenter.setLength(vectorToCenter.length()+(this.scaleRadius(this.planetDataObject.Durchm1*3)));
+        vectorToCenter.y += (this.scaleRadius(this.planetDataObject.Durchm1));
+
+        camera.camera.position = this.cameraObjectGroup.worldToLocal(vectorToCenter);
+
         this.camera = camera;
     },
-    removeCamera : function(camera){
+    removeCamera : function(){
         this.camera = null;
     },
     moveDays : function(days){

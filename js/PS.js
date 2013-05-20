@@ -7,9 +7,44 @@
 
     // ==== private functions ====
 
+    //http://www.browserleaks.com/webgl#howto-detect-webgl
+    var webgl_detect = function(return_context)
+    {
+        if (!!window.WebGLRenderingContext) {
+            var canvas = document.createElement("canvas"),
+                names = ["webgl", "experimental-webgl", "moz-webgl", "webkit-3d"],
+                context = false;
+
+            for(var i=0;i<4;i++) {
+                try {
+                    context = canvas.getContext(names[i]);
+                    if (context && typeof context.getParameter == "function") {
+                        // WebGL is enabled
+                        if (return_context) {
+                            // return WebGL object if the function's argument is present
+                            return {name:names[i], gl:context};
+                        }
+                        // else, return just true
+                        return true;
+                    }
+                } catch(e) {}
+            }
+
+            // WebGL is supported, but disabled
+            return false;
+        }
+
+        // WebGL not supported
+        return false;
+    };
 
     // ==== public functions ====
     var initialize = function() {
+
+        if(!webgl_detect()){
+            $('#noWebGl').show();
+            return;
+        }
 
         universe = new PS.lib.Universe('webglCanvas');
 
@@ -34,7 +69,7 @@
 //        universe.showAxis('-x');
 //        universe.showAxis('-y');
 //        universe.showAxis('-z');
- //       universe.showPlane();
+        //       universe.showPlane();
 
         $(window).keydown(function(event){
             if(event.keyCode == 49){
@@ -45,8 +80,10 @@
 
         universe.renderScene();
         universe.run();
-		//universe.startPlanetMove();
+        //universe.startPlanetMove();
     };
+
+
 
     var showAll = function(){
         if(universe.orbitVisible) universe.showOrbits();
@@ -54,49 +91,48 @@
     };
 
     var showPlanet = function(planet){
+        universe.adjustVisibility(planet);
         universe.clearOrbits();
         universe.showPlanetOrbit(planet,true);
         universe.setCameraToPlanet(planet);
     };
 
     var showMoon = function(planet,moon){
+        universe.showMoons();
         universe.clearOrbits();
         universe.showMoonOrbit(planet,moon);
         universe.setCameraToPlanet(planet);
     };
 
-    var showConstellation = function(year,month,day){
-          universe.stopPlanetMove();
-        universe.resetCamera();
+    var showConstellation = function(year,month,day,x,y,z){
+        universe.stopPlanetMove();
+        universe.resetCamera(x,y,z);
         universe.setDate(new Date(year,parseFloat(month)-1,day));
     };
 
-    var moveCamera = function(direction){
-        universe.moveCamera(direction);
+    var cameraMoveInterval;
+    var startMoveCamera = function(direction,continous){
+        if(continous) cameraMoveInterval = setInterval(function(){universe.moveCamera(direction)}, 100);
+        else universe.moveCamera(direction);
     };
 
-    var start = function(){
-        universe.startPlanetMove();
+    var stopMoveCamera = function(){
+        clearInterval(cameraMoveInterval);
     };
 
-    var stop = function(){
-        speedForward = 0;
-        speedBackward = 0;
-        universe.stopPlanetMove();
-    };
 
-    var setMoonVisibility = function(state){
-        if(state) universe.showMoons();
+    var toogleMoonVisibility = function(){
+        if(!universe.moonVisible) universe.showMoons();
         else universe.hideMoons();
     };
 
-    var setDwarfVisibility = function(state){
-        if(state) universe.showDwarf();
+    var toogleDwarfVisibility = function(){
+        if(!universe.dwarfPlanetsVisible) universe.showDwarf();
         else universe.hideDwarf();
     };
 
-    var setOrbitVisibility = function(state){
-        if(state) universe.showOrbits();
+    var toogleOrbitVisibility = function(){
+        if(!universe.orbitVisible) universe.showOrbits();
         else universe.hideOrbits();
     };
 
@@ -116,24 +152,96 @@
     };
 
 
-    var speedForward = 0;
-    var speedBackward = 0;
+    var speed = 0;
+    var oldSpeed = 2;
+
+    var setUniverseSpeed =  function(speed){
+        if(speed == 0) universe.stopPlanetMove();
+        else if(speed > 0) universe.forward(speed);
+        else universe.backward(-speed);
+
+        switch(speed){
+            case -3:
+                $('#forwardLabel').hide();
+                $('#backwardLabel').html('2x');
+                $('#backwardLabel').show();
+                break;
+            case -2:
+                $('#forwardLabel').hide();
+                $('#backwardLabel').html('1x');
+                $('#backwardLabel').show();
+                break;
+            case -1:
+                $('#forwardLabel').hide();
+                $('#backwardLabel').html('0.5x');
+                $('#backwardLabel').show();
+                break;
+            case 0:
+                $('#backwardLabel').hide();
+                $('#forwardLabel').hide();
+                break;
+            case 1:
+                $('#backwardLabel').hide();
+                $('#forwardLabel').html('0.5x');
+                $('#forwardLabel').show();
+                break;
+            case 2:
+                $('#backwardLabel').hide();
+                $('#forwardLabel').html('1x');
+                $('#forwardLabel').show();
+                break;
+            case 3:
+                $('#backwardLabel').hide();
+                $('#forwardLabel').html('2x');
+                $('#forwardLabel').show();
+                break;
+            default:
+                $('#backwardLabel').hide();
+                $('#forwardLabel').hide();
+                break;
+        }
+
+    };
+
+    var start = function(){
+        speed = oldSpeed;
+        setUniverseSpeed(speed);
+    };
+
+    var stop = function(){
+        oldSpeed = speed;
+        speed = 0;
+        setUniverseSpeed(speed);
+    };
 
     var forward = function(){
-        speedForward++;
-        if(speedForward > 3) speedForward = 3;
-        speedBackward = 0;
-        universe.forward(speedForward);
+        if(speed == 0){
+            speed = 2;
+        }
+        else{
+            speed++;
+            if(speed == 0) speed++;
+            if(speed > 3) speed = 3;
+        }
+        setUniverseSpeed(speed);
     };
 
     var backward = function(){
-        speedBackward++;
-        if(speedBackward > 3) speedBackward = 3;
-        speedForward = 0;
-        universe.backward(speedBackward);
+        if(speed == 0){
+            speed = -2;
+        }
+        else{
+            speed--;
+            if(speed == 0) speed--;
+            if(speed < -3) speed = -3;
+        }
+
+        setUniverseSpeed(speed);
     };
 
-        //==== Return ====
+
+
+    //==== Return ====
     window.PS = {
         // ==== public variables ====
         VERSION_NUMBER: "0.1.0",
@@ -145,12 +253,13 @@
         showMoon : showMoon,
         showAll : showAll,
         showConstellation : showConstellation,
-        moveCamera : moveCamera,
+        startMoveCamera : startMoveCamera,
+        stopMoveCamera : stopMoveCamera,
         start : start,
         stop : stop,
-        setMoonVisibility : setMoonVisibility,
-        setDwarfVisibility : setDwarfVisibility,
-        setOrbitVisibility: setOrbitVisibility,
+        toogleMoonVisibility : toogleMoonVisibility,
+        toogleDwarfVisibility : toogleDwarfVisibility,
+        toogleOrbitVisibility: toogleOrbitVisibility,
         forward : forward,
         backward : backward,
         setDateFromSlider : setDateFromSlider,
