@@ -27,6 +27,10 @@
 
     speed : 0,
 
+    daysSpeed1:0.005,
+    daysSpeed2:1.1,
+    daysSpeed3:100,
+
 
     // ==== functions ====
     init : function(containerDiv){
@@ -112,18 +116,18 @@
                     this.planets[x].updateForward(this.speed,this.moonVisible);
                 }
 
-                if(this.speed == 1) this.date.setDate(this.date.getDate() + 1);
-                if(this.speed == 2) this.date.setDate(this.date.getDate() + 10);
-                if(this.speed == 3) this.date.setDate(this.date.getDate() + 100);
+                if(this.speed == 1) this.date.setTime(this.date.getTime() + this.daysSpeed1*1000*60*60*24);
+                if(this.speed == 2) this.date.setTime(this.date.getTime() + this.daysSpeed2*1000*60*60*24);
+                if(this.speed == 3) this.date.setTime(this.date.getTime() + this.daysSpeed3*1000*60*60*24);
             }
             if(this.direction == 'backward'){
                 for(var x in this.planets){
                     this.planets[x].updateBackward(this.speed,this.moonVisible);
                 }
 
-                if(this.speed == 1) this.date.setDate(this.date.getDate() - 1);
-                if(this.speed == 2) this.date.setDate(this.date.getDate() - 10);
-                if(this.speed == 3) this.date.setDate(this.date.getDate() - 100);
+                if(this.speed == 1) this.date.setTime(this.date.getTime() - this.daysSpeed1*1000*60*60*24);
+                if(this.speed == 2) this.date.setTime(this.date.getTime() - this.daysSpeed2*1000*60*60*24);
+                if(this.speed == 3) this.date.setTime(this.date.getTime() - this.daysSpeed3*1000*60*60*24);
             }
 
             PS.updateTimeSlider(this.date);
@@ -170,8 +174,9 @@
 
         if(planet.planetDataObject.Name != 'Sonne') this.planets[planet.planetDataObject.Name] = planet;
         else this.sun = planet;
-        this.scene.add(planet.getObjectGroup());
+
         this.scene.add(planet.getOrbit());
+        this.scene.add(planet.getObjectGroup());
 
         //this.scene.add(planet.perihelLine);
 
@@ -206,12 +211,12 @@
         var geometry = new THREE.Geometry();
         geometry.vertices.push(new THREE.Vector3(0, 0, 0));
         if(type == 'x') geometry.vertices.push(new THREE.Vector3(1500000, 0, 0));
-        if(type == 'y') geometry.vertices.push(new THREE.Vector3(0, 15000, 0));
-        if(type == 'z') geometry.vertices.push(new THREE.Vector3(0, 0, 15000));
+        if(type == 'y') geometry.vertices.push(new THREE.Vector3(0, 1500000, 0));
+        if(type == 'z') geometry.vertices.push(new THREE.Vector3(0, 0, 1500000));
 
-        if(type == '-x') geometry.vertices.push(new THREE.Vector3(-15000, 0, 0));
-        if(type == '-y') geometry.vertices.push(new THREE.Vector3(0, -15000, 0));
-        if(type == '-z') geometry.vertices.push(new THREE.Vector3(0, 0, -15000));
+        if(type == '-x') geometry.vertices.push(new THREE.Vector3(-1500000, 0, 0));
+        if(type == '-y') geometry.vertices.push(new THREE.Vector3(0, -1500000, 0));
+        if(type == '-z') geometry.vertices.push(new THREE.Vector3(0, 0, -1500000));
 
         material = new THREE.LineBasicMaterial( { color: 0xffccff, opacity: .5, linewidth: 2 } );
 

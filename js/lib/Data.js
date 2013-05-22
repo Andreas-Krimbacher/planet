@@ -116,7 +116,8 @@ PS.lib.Data = Class.extend({
                 "Periode": "87.969",
                 "Durchm1": "9902",
                 "Durchm2": "",
-                img: 'mercury.jpg'
+                img: 'mercury.jpg',
+                AxialTilt: "0"
             },
             {
                 "Name": "Venus",
@@ -131,7 +132,8 @@ PS.lib.Data = Class.extend({
                 "Periode": "224.701",
                 "Durchm1": "21366",
                 "Durchm2": "",
-                img: 'venus.jpg'
+                img: 'venus.jpg',
+                AxialTilt: "177.36"
             },
             {
                 "Name": "Earth",
@@ -147,7 +149,8 @@ PS.lib.Data = Class.extend({
                 "Revolution": "1",
                 "Durchm1": "22601",
                 "Durchm2": "",
-                img: 'earth.jpg'
+                img: 'earth.jpg',
+                AxialTilt: "23.4"
             },
             {
                 "Name": "Mars",
@@ -162,7 +165,8 @@ PS.lib.Data = Class.extend({
                 "Periode": "686.98",
                 "Durchm1": "14202",
                 "Durchm2": "",
-                img: 'mars.jpg'
+                img: 'mars.jpg',
+                AxialTilt: "25.19"
             },
             {
                 "Name": "Jupiter",
@@ -177,7 +181,8 @@ PS.lib.Data = Class.extend({
                 "Periode": "4331.936",
                 "Durchm1": "171739",
                 "Durchm2": "",
-                img: 'jupiter.jpg'
+                img: 'jupiter.jpg',
+                AxialTilt: "3.13"
             },
             {
                 "Name": "Saturn",
@@ -192,7 +197,8 @@ PS.lib.Data = Class.extend({
                 "Periode": "10759.346",
                 "Durchm1": "151953",
                 "Durchm2": "",
-                img: 'saturn.jpg'
+                img: 'saturn.jpg',
+                AxialTilt: "26.73"
             },
             {
                 "Name": "Uranus",
@@ -207,7 +213,8 @@ PS.lib.Data = Class.extend({
                 "Periode": "30685.522",
                 "Durchm1": "94461",
                 "Durchm2": "",
-                img: 'uranus.jpg'
+                img: 'uranus.jpg',
+                AxialTilt: "97.77"
             },
             {
                 "Name": "Neptune",
@@ -222,7 +229,8 @@ PS.lib.Data = Class.extend({
                 "Periode": "60190.536",
                 "Durchm1": "109512",
                 "Durchm2": "",
-                img: 'Neptune.jpg'
+                img: 'Neptune.jpg',
+                AxialTilt: "28.32"
             },
             {
                 "Name": "Ceres",
@@ -250,7 +258,8 @@ PS.lib.Data = Class.extend({
                 "MJ2000": "238.9288",
                 "Periode": "90466.606",
                 "Durchm1": "61377",
-                "Durchm2": ""
+                "Durchm2": "",
+                AxialTilt: "122.53"
             },
             {
                 "Name": "Haumea",

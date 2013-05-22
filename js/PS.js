@@ -64,8 +64,8 @@
 
         universe.addLight();
 //        universe.showAxis('x');
-//        universe.showAxis('y');
-//        universe.showAxis('z');
+//       universe.showAxis('y');
+//       universe.showAxis('z');
 //        universe.showAxis('-x');
 //        universe.showAxis('-y');
 //        universe.showAxis('-z');
@@ -209,6 +209,7 @@
     };
 
     var stop = function(){
+        if(speed == 0) return;
         oldSpeed = speed;
         speed = 0;
         setUniverseSpeed(speed);
