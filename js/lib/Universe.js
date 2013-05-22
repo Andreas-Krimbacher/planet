@@ -22,6 +22,7 @@
     dwarfPlanetsVisible: true,
     moonVisible : true,
     orbitVisible : true,
+    animateRotation : false,
 
     direction : 'forward',
 
@@ -113,7 +114,7 @@
         if(this.planetMove){
             if(this.direction == 'forward'){
                 for(var x in this.planets){
-                    this.planets[x].updateForward(this.speed,this.moonVisible);
+                    this.planets[x].updateForward(this.speed,this.moonVisible,this.animateRotation);
                 }
 
                 if(this.speed == 1) this.date.setTime(this.date.getTime() + this.daysSpeed1*1000*60*60*24);
@@ -122,7 +123,7 @@
             }
             if(this.direction == 'backward'){
                 for(var x in this.planets){
-                    this.planets[x].updateBackward(this.speed,this.moonVisible);
+                    this.planets[x].updateBackward(this.speed,this.moonVisible,this.animateRotation);
                 }
 
                 if(this.speed == 1) this.date.setTime(this.date.getTime() - this.daysSpeed1*1000*60*60*24);
@@ -201,7 +202,8 @@
         // add to the scene
         this.scene.add(pointLight);
 
-        var amb = new THREE.AmbientLight(0x676767);
+
+        var amb = new THREE.AmbientLight(0xFFFFFF);
         this.scene.add(amb);
 
     },
@@ -357,6 +359,12 @@
     hideMoonOrbit : function(planet,moon){
         this.planets[planet].orbitMoon[moon].children[0].visible = false;
     },
+    startPlanetRotation : function(){
+        this.animateRotation = true;
+    },
+    stopPlanetRotation : function(){
+        this.animateRotation = false;
+    },
     moveCamera : function(direction){
         switch(direction){
             case "up":   this.orbitControl.rotateUp(0.05); break;
@@ -368,8 +376,10 @@
         }
     },
     adjustVisibility : function(planet){
-        if(this.planets[planet].planetDataObject.Status == 'Zwergplanet') this.showDwarf();
-        if(this.planets[planet].planetDataObject.Status == 'Mond') this.showMoons();
+        if(this.planets[planet].planetDataObject.Status == 'Zwergplanet'){
+            if(PS.setLayerCheckbox) PS.setLayerCheckbox('dwarf',true);
+            this.showDwarf();
+        }
     }
 
 });

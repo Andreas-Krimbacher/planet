@@ -98,6 +98,7 @@
     };
 
     var showMoon = function(planet,moon){
+        if(PS.setLayerCheckbox) PS.setLayerCheckbox('moon',true);
         universe.showMoons();
         universe.clearOrbits();
         universe.showMoonOrbit(planet,moon);
@@ -134,6 +135,11 @@
     var toogleOrbitVisibility = function(){
         if(!universe.orbitVisible) universe.showOrbits();
         else universe.hideOrbits();
+    };
+
+    var tooglePlanetRotation = function(){
+        if(!universe.animateRotation) universe.startPlanetRotation();
+        else universe.stopPlanetRotation();
     };
 
 
@@ -261,6 +267,7 @@
         toogleMoonVisibility : toogleMoonVisibility,
         toogleDwarfVisibility : toogleDwarfVisibility,
         toogleOrbitVisibility: toogleOrbitVisibility,
+        tooglePlanetRotation: tooglePlanetRotation,
         forward : forward,
         backward : backward,
         setDateFromSlider : setDateFromSlider,

@@ -24,9 +24,9 @@ PS.lib.Planet = Class.extend({
     rotWorldMatrixMoonBackwardSpeed3 : null,
     rotAxisMoon : null,
     rotAxis : null,
-    segments : 16,
-    segmentsOrbit : 50,
-    rings : 16,
+    segments : 32,
+    segmentsOrbit : 120,
+    rings : 32,
     angle : 0,
     camera : null,
     distScale : null,
@@ -84,7 +84,9 @@ PS.lib.Planet = Class.extend({
             var geometry = new THREE.Geometry();
             geometry.vertices.push(new THREE.Vector3(0, -this.scaleRadius(planetDataObject.Durchm1/2)*1.2, 0));
             geometry.vertices.push(new THREE.Vector3(0, this.scaleRadius(planetDataObject.Durchm1/2)*1.2, 0));
-            material = new THREE.LineBasicMaterial( { color: 0xffccff, opacity: .5, linewidth: 2 } );
+            var material = new THREE.LineBasicMaterial({
+                color: 0x677798
+            });
             var rotAxis = new THREE.Line( geometry, material );
             objectGroupTilt.add(rotAxis);
         }
@@ -112,10 +114,10 @@ PS.lib.Planet = Class.extend({
                 // create the sphere's material
                 if(planetDataObject.moon[x].img){
                     var texture = THREE.ImageUtils.loadTexture(this.IMAGE_PATH + planetDataObject.moon[x].img);
-                    var material = new THREE.MeshBasicMaterial( { map: texture } );
+                    var material = new THREE.MeshPhongMaterial( {map: texture, ambient: 0x333333} );
                 }
                 else{
-                    var material = new THREE.MeshLambertMaterial({color: 0x677798});
+                    var material = new THREE.MeshPhongMaterial( { color: 0x999999, ambient: 0x333333} );
                 }
 
                 meshMoon = new THREE.Mesh(
@@ -139,16 +141,23 @@ PS.lib.Planet = Class.extend({
 
 
         // create the sphere's material
+
         if(planetDataObject.img){
             var texture = THREE.ImageUtils.loadTexture(this.IMAGE_PATH + planetDataObject.img);
-            var material = new THREE.MeshBasicMaterial( { map: texture } );
+
+            if(this.planetDataObject.Status == 'Sonne'){
+                var material = new THREE.MeshLambertMaterial( { map: texture } );
+            }
+            else{
+                var material = new THREE.MeshPhongMaterial( {map: texture, ambient: 0x333333} );
+            }
         }
         else{
-            var material = new THREE.MeshLambertMaterial(
-                {
-                    color: 0xE8251E
-                });
+            var material = new THREE.MeshPhongMaterial( { color: 0x999999, ambient: 0x333333} );
         }
+
+
+
 
         this.planetMesh = new THREE.Mesh(
             new THREE.SphereGeometry(this.scaleRadius(planetDataObject.Durchm1/2), this.segments, this.rings),
@@ -164,11 +173,8 @@ PS.lib.Planet = Class.extend({
         if(this.planetDataObject.Status != 'Sonne') this._alignOrbit( this.objectGroup ,this.planetDataObject, this.orbit);
     },
     _createOrbit : function(a){
-        // Create an empty geometry object to hold the line vertex data
         var geometry = new THREE.Geometry();
-        // Create points along the circumference of a circle with radius == distance
-        var i, len = 60, twopi = 2 * Math.PI;
-
+        var i, twopi = 2 * Math.PI;
 
         for (i = 0; i <= this.segmentsOrbit; i++)
         {
@@ -178,14 +184,10 @@ PS.lib.Planet = Class.extend({
             geometry.vertices.push(vertex);
         }
 
-
-        geometry.computeLineDistances();
         var material = new THREE.LineBasicMaterial({
             color: 0x677798
         });
 
-
-        // var material = new THREE.LineDashedMaterial( { color: 0xffaa00, dashSize: 3, gapSize: 10, linewidth: 2 }, THREE.LinePieces );
         var orbit = new THREE.Object3D();
         orbit.add(new THREE.Line( geometry, material ));
         return orbit
@@ -337,9 +339,9 @@ PS.lib.Planet = Class.extend({
         return this.orbit;
 
     },
-    updateForward : function(speed,animateMoons){
+    updateForward : function(speed,animateMoons,animateRotation){
         var rotWorldMatrix;
-        if(animateMoons && this.rotWorldMatrixForwardSpeed1){
+        if(this.rotWorldMatrixForwardSpeed1){
 
 
             if(speed == 2) rotWorldMatrix = this.rotWorldMatrixForwardSpeed2.clone();
@@ -358,15 +360,23 @@ PS.lib.Planet = Class.extend({
             this.objectGroupPlanet.matrix = rotWorldMatrix;
             this.objectGroupPlanet.rotation.setEulerFromRotationMatrix(this.objectGroupPlanet.matrix);
 
-            if(this.planetDataObject.Revolution){
-                if(speed == 2) this.planetMesh.rotation.y += 2 * Math.PI * this.daysSpeed2 / this.planetDataObject.Revolution;
-                else if(speed == 3) this.planetMesh.rotation.y += 2 * Math.PI * this.daysSpeed3 / this.planetDataObject.Revolution;
-                else this.planetMesh.rotation.y += 2 * Math.PI * this.daysSpeed1 / this.planetDataObject.Revolution;
+            if(speed == 2) rotWorldMatrix = this.rotWorldMatrixBackwardSpeed2.clone();
+            else if(speed == 3) rotWorldMatrix = this.rotWorldMatrixBackwardSpeed3.clone();
+            else rotWorldMatrix = this.rotWorldMatrixBackwardSpeed1.clone();
+
+            rotWorldMatrix.multiply(this.cameraObjectGroup.matrix); // pre-multiply
+            this.cameraObjectGroup.matrix = rotWorldMatrix;
+            this.cameraObjectGroup.rotation.setEulerFromRotationMatrix(this.cameraObjectGroup.matrix);
+
+            if(animateRotation && this.planetDataObject.Rotation){
+                if(speed == 2) this.planetMesh.rotation.y += 2 * Math.PI * this.daysSpeed2 / this.planetDataObject.Rotation;
+                else if(speed == 3) this.planetMesh.rotation.y += 2 * Math.PI * this.daysSpeed3 / this.planetDataObject.Rotation;
+                else this.planetMesh.rotation.y += 2 * Math.PI * this.daysSpeed1 / this.planetDataObject.Rotation;
             }
 
         }
 
-        if(this.rotWorldMatrixMoonForwardSpeed1){
+        if(animateMoons && this.rotWorldMatrixMoonForwardSpeed1){
             for(var x in this.rotWorldMatrixMoonForwardSpeed1){
                 if(speed == 2) rotWorldMatrix = this.rotWorldMatrixMoonForwardSpeed2[x].clone();
                 else if(speed == 3) rotWorldMatrix = this.rotWorldMatrixMoonForwardSpeed3[x].clone();
@@ -378,7 +388,7 @@ PS.lib.Planet = Class.extend({
             }
         }
     },
-    updateBackward : function(speed,animateMoons){
+    updateBackward : function(speed,animateMoons,animateRotation){
         var rotWorldMatrix;
         if(this.rotWorldMatrixBackwardSpeed1){
             if(speed == 2) rotWorldMatrix = this.rotWorldMatrixBackwardSpeed2.clone();
@@ -397,10 +407,18 @@ PS.lib.Planet = Class.extend({
             this.objectGroupPlanet.matrix = rotWorldMatrix;
             this.objectGroupPlanet.rotation.setEulerFromRotationMatrix(this.objectGroupPlanet.matrix);
 
-            if(this.planetDataObject.Revolution){
-                if(speed == 2) this.planetMesh.rotation.y -= 2 * Math.PI * this.daysSpeed2 / this.planetDataObject.Revolution;
-                else if(speed == 3) this.planetMesh.rotation.y -= 2 * Math.PI * this.daysSpeed3 / this.planetDataObject.Revolution;
-                else this.planetMesh.rotation.y -= 2 * Math.PI * this.daysSpeed1 / this.planetDataObject.Revolution;
+            if(speed == 2) rotWorldMatrix = this.rotWorldMatrixForwardSpeed2.clone();
+            else if(speed == 3) rotWorldMatrix = this.rotWorldMatrixForwardSpeed3.clone();
+            else rotWorldMatrix = this.rotWorldMatrixForwardSpeed1.clone();
+
+            rotWorldMatrix.multiply(this.cameraObjectGroup.matrix); // pre-multiply
+            this.cameraObjectGroup.matrix = rotWorldMatrix;
+            this.cameraObjectGroup.rotation.setEulerFromRotationMatrix(this.cameraObjectGroup.matrix);
+
+            if(animateRotation && this.planetDataObject.Rotation){
+                if(speed == 2) this.planetMesh.rotation.y -= 2 * Math.PI * this.daysSpeed2 / this.planetDataObject.Rotation;
+                else if(speed == 3) this.planetMesh.rotation.y -= 2 * Math.PI * this.daysSpeed3 / this.planetDataObject.Rotation;
+                else this.planetMesh.rotation.y -= 2 * Math.PI * this.daysSpeed1 / this.planetDataObject.Rotation;
             }
         }
 

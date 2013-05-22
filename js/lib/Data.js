@@ -28,10 +28,19 @@ PS.lib.Data = Class.extend({
 
         var objectData = {};
 
+        var addToSun = 0;
+
         for (var x in tableData) {
             if (tableData[x].Status == "Sonne" || tableData[x].Status == "Planet" || tableData[x].Status == "Zwergplanet") {
+
+
+
                 if (!objectData[tableData[x].Name]) {
                     objectData[tableData[x].Name] = tableData[x];
+
+                    if(tableData[x].Status == "Sonne") objectData[tableData[x].Name].Durchm1 = parseFloat(objectData[tableData[x].Name].Durchm1) + addToSun;
+                    else objectData[tableData[x].Name].a = parseFloat(objectData[tableData[x].Name].a) + addToSun;
+
                     objectData[tableData[x].Name].MJ2000_True = this.calculate_TrueM(objectData[tableData[x].Name]);
                     objectData[tableData[x].Name].omega = this.calculate_omega(objectData[tableData[x].Name]);
                 }
@@ -99,9 +108,10 @@ PS.lib.Data = Class.extend({
                 "w": "",
                 "MJ2000": "",
                 "Periode": "",
+                "Rotation": "1",
                 "Durchm1": "75000",
                 "Durchm2": "",
-                img: 'sun.jpg'
+                img: 'sun.png'
             },
             {
                 "Name": "Mercury",
@@ -114,6 +124,7 @@ PS.lib.Data = Class.extend({
                 "w": "77.4565",
                 "MJ2000": "252.2508",
                 "Periode": "87.969",
+                "Rotation": "58.6462",
                 "Durchm1": "9902",
                 "Durchm2": "",
                 img: 'mercury.jpg',
@@ -130,6 +141,7 @@ PS.lib.Data = Class.extend({
                 "w": "131.533",
                 "MJ2000": "181.9797",
                 "Periode": "224.701",
+                "Rotation": "-243.0187",
                 "Durchm1": "21366",
                 "Durchm2": "",
                 img: 'venus.jpg',
@@ -146,7 +158,7 @@ PS.lib.Data = Class.extend({
                 "w": "102.9472",
                 "MJ2000": "100.4644",
                 "Periode": "365.256",
-                "Revolution": "1",
+                "Rotation": "0.997270",
                 "Durchm1": "22601",
                 "Durchm2": "",
                 img: 'earth.jpg',
@@ -163,6 +175,7 @@ PS.lib.Data = Class.extend({
                 "w": "336.0408",
                 "MJ2000": "355.4533",
                 "Periode": "686.98",
+                "Rotation": "1.025957",
                 "Durchm1": "14202",
                 "Durchm2": "",
                 img: 'mars.jpg',
@@ -179,6 +192,7 @@ PS.lib.Data = Class.extend({
                 "w": "14.7539",
                 "MJ2000": "34.4044",
                 "Periode": "4331.936",
+                "Rotation": "0.41007",
                 "Durchm1": "171739",
                 "Durchm2": "",
                 img: 'jupiter.jpg',
@@ -195,6 +209,7 @@ PS.lib.Data = Class.extend({
                 "w": "92.4319",
                 "MJ2000": "49.9443",
                 "Periode": "10759.346",
+                "Rotation": "0.426",
                 "Durchm1": "151953",
                 "Durchm2": "",
                 img: 'saturn.jpg',
@@ -211,6 +226,7 @@ PS.lib.Data = Class.extend({
                 "w": "170.9642",
                 "MJ2000": "313.2322",
                 "Periode": "30685.522",
+                "Rotation": "-0.71833",
                 "Durchm1": "94461",
                 "Durchm2": "",
                 img: 'uranus.jpg',
@@ -227,6 +243,7 @@ PS.lib.Data = Class.extend({
                 "w": "44.9714",
                 "MJ2000": "304.88",
                 "Periode": "60190.536",
+                "Rotation": "0.67125",
                 "Durchm1": "109512",
                 "Durchm2": "",
                 img: 'Neptune.jpg',
@@ -257,6 +274,7 @@ PS.lib.Data = Class.extend({
                 "w": "224.0668",
                 "MJ2000": "238.9288",
                 "Periode": "90466.606",
+                "Rotation": "-6.38718",
                 "Durchm1": "61377",
                 "Durchm2": "",
                 AxialTilt: "122.53"
