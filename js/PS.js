@@ -107,6 +107,7 @@
 
     var showConstellation = function(year,month,day,x,y,z){
         universe.stopPlanetMove();
+        if(universe.orbitVisible) universe.showOrbits();
         universe.resetCamera(x,y,z);
         universe.setDate(new Date(year,parseFloat(month)-1,day));
     };
@@ -144,6 +145,8 @@
 
 
     var setDateFromSlider = function(years){
+        stop();
+
         var baseTime = new Date(2000,0,1);
 
         var time = new Date();

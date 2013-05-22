@@ -4,8 +4,8 @@ PS.lib.Planet = Class.extend({
     IMAGE_PATH : 'img/',
     planetDataObject : null,
     planetMesh : null,
+    rotAxisLine : null,
     objectGroup : null,
-    cameraObjectGroup : null,
     objectGroupPlanet : null,
     objectGroupMoon : null,
     orbit : null,
@@ -66,9 +66,6 @@ PS.lib.Planet = Class.extend({
 
         this.objectGroup = new THREE.Object3D();
 
-        this.cameraObjectGroup = new THREE.Object3D();
-        this.cameraObjectGroup.position.x = this.scaleDist(planetDataObject.a);
-        this.objectGroup.add(this.cameraObjectGroup);
 
         this.objectGroupPlanet = new THREE.Object3D();
         this.objectGroupPlanet.position.x = this.scaleDist(planetDataObject.a);
@@ -87,8 +84,8 @@ PS.lib.Planet = Class.extend({
             var material = new THREE.LineBasicMaterial({
                 color: 0x677798
             });
-            var rotAxis = new THREE.Line( geometry, material );
-            objectGroupTilt.add(rotAxis);
+            this.rotAxisLine = new THREE.Line( geometry, material );
+            objectGroupTilt.add(this.rotAxisLine);
         }
 
         if(planetDataObject.moon){
@@ -360,13 +357,6 @@ PS.lib.Planet = Class.extend({
             this.objectGroupPlanet.matrix = rotWorldMatrix;
             this.objectGroupPlanet.rotation.setEulerFromRotationMatrix(this.objectGroupPlanet.matrix);
 
-            if(speed == 2) rotWorldMatrix = this.rotWorldMatrixBackwardSpeed2.clone();
-            else if(speed == 3) rotWorldMatrix = this.rotWorldMatrixBackwardSpeed3.clone();
-            else rotWorldMatrix = this.rotWorldMatrixBackwardSpeed1.clone();
-
-            rotWorldMatrix.multiply(this.cameraObjectGroup.matrix); // pre-multiply
-            this.cameraObjectGroup.matrix = rotWorldMatrix;
-            this.cameraObjectGroup.rotation.setEulerFromRotationMatrix(this.cameraObjectGroup.matrix);
 
             if(animateRotation && this.planetDataObject.Rotation){
                 if(speed == 2) this.planetMesh.rotation.y += 2 * Math.PI * this.daysSpeed2 / this.planetDataObject.Rotation;
@@ -407,13 +397,6 @@ PS.lib.Planet = Class.extend({
             this.objectGroupPlanet.matrix = rotWorldMatrix;
             this.objectGroupPlanet.rotation.setEulerFromRotationMatrix(this.objectGroupPlanet.matrix);
 
-            if(speed == 2) rotWorldMatrix = this.rotWorldMatrixForwardSpeed2.clone();
-            else if(speed == 3) rotWorldMatrix = this.rotWorldMatrixForwardSpeed3.clone();
-            else rotWorldMatrix = this.rotWorldMatrixForwardSpeed1.clone();
-
-            rotWorldMatrix.multiply(this.cameraObjectGroup.matrix); // pre-multiply
-            this.cameraObjectGroup.matrix = rotWorldMatrix;
-            this.cameraObjectGroup.rotation.setEulerFromRotationMatrix(this.cameraObjectGroup.matrix);
 
             if(animateRotation && this.planetDataObject.Rotation){
                 if(speed == 2) this.planetMesh.rotation.y -= 2 * Math.PI * this.daysSpeed2 / this.planetDataObject.Rotation;
@@ -437,13 +420,13 @@ PS.lib.Planet = Class.extend({
     setCamera : function(camera){
 
 
-        this.cameraObjectGroup.add(camera.camera);
+        this.objectGroupPlanet.add(camera.camera);
 
         var vectorToCenter = new THREE.Vector3().getPositionFromMatrix(this.planetMesh.matrixWorld);
         vectorToCenter.setLength(vectorToCenter.length()+(this.scaleRadius(this.planetDataObject.Durchm1*3)));
         vectorToCenter.y += (this.scaleRadius(this.planetDataObject.Durchm1));
 
-        camera.camera.position = this.cameraObjectGroup.worldToLocal(vectorToCenter);
+        camera.camera.position = this.objectGroupPlanet.worldToLocal(vectorToCenter);
 
         this.camera = camera;
     },
@@ -456,5 +439,19 @@ PS.lib.Planet = Class.extend({
         rotWorldMatrix.multiply(this.objectGroup.matrix); // pre-multiply
         this.objectGroup.matrix = rotWorldMatrix;
         this.objectGroup.rotation.setEulerFromRotationMatrix(this.objectGroup.matrix);
+
+        rotWorldMatrix = new THREE.Matrix4();
+        rotWorldMatrix.makeRotationAxis(this.rotAxis, (-1) * (days*2*Math.PI) / this.planetDataObject.Periode);
+        rotWorldMatrix.multiply(this.objectGroupPlanet.matrix); // pre-multiply
+        this.objectGroupPlanet.matrix = rotWorldMatrix;
+        this.objectGroupPlanet.rotation.setEulerFromRotationMatrix(this.objectGroupPlanet.matrix);
+
+        for(var x in this.rotAxisMoon){
+            rotWorldMatrix = new THREE.Matrix4();
+            rotWorldMatrix.makeRotationAxis(this.rotAxisMoon[x], (days*2*Math.PI) / this.planetDataObject.moon[x].Periode);
+            rotWorldMatrix.multiply(this.objectGroupMoon[x].matrix); // pre-multiply
+            this.objectGroupMoon[x].matrix = rotWorldMatrix;
+            this.objectGroupMoon[x].rotation.setEulerFromRotationMatrix(this.objectGroupMoon[x].matrix);
+        }
     }
 });

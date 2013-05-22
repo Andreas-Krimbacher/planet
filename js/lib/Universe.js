@@ -274,6 +274,7 @@
         for(var x in this.planets){
             if(this.planets[x].planetDataObject.Status == 'Zwergplanet'){
                 this.planets[x].planetMesh.visible = false;
+                this.planets[x].rotAxisLine.visible = false;
                 this.planets[x].orbit.children[0].visible = false;
                 if(this.planets[x].objectGroupMoon){
                     for(var y in this.planets[x].orbitMoon){
@@ -291,6 +292,7 @@
         for(var x in this.planets){
             if(this.planets[x].planetDataObject.Status == 'Zwergplanet'){
                 this.planets[x].planetMesh.visible = true;
+                this.planets[x].rotAxisLine.visible = true;
                 this.planets[x].orbit.children[0].visible = true;
                 if(this.planets[x].objectGroupMoon){
                     for(var y in this.planets[x].orbitMoon){
