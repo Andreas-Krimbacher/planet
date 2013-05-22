@@ -23,7 +23,43 @@
       <file leaf-file-name="index.html" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/index.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state line="32" column="1" selection-start="1223" selection-end="1223" vertical-scroll-proportion="0.4785643">
+            <state line="52" column="0" selection-start="1690" selection-end="1690" vertical-scroll-proportion="0.3569292">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="main.css" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/three/main.css">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="3" column="14" selection-start="68" selection-end="68" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="PS.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/three/js/PS.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="145" column="45" selection-start="6090" selection-end="6090" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Universe.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/three/js/lib/Universe.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="100" column="0" selection-start="2403" selection-end="2403" vertical-scroll-proportion="0.0">
+              <folding />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="Planet.js" pinned="false" current="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/three/js/lib/Planet.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state line="255" column="16" selection-start="11929" selection-end="12236" vertical-scroll-proportion="0.0">
               <folding />
             </state>
           </provider>
@@ -31,9 +67,27 @@
       </file>
     </leaf>
   </component>
+  <component name="FindManager">
+    <FindUsagesManager>
+      <setting name="OPEN_NEW_TAB" value="false" />
+    </FindUsagesManager>
+  </component>
   <component name="IdeDocumentHistory">
     <option name="changedFiles">
       <list>
+        <option value="$PROJECT_DIR$/threejs/js/PS.js" />
+        <option value="$PROJECT_DIR$/threejs/index.html" />
+        <option value="$PROJECT_DIR$/three/index1.html" />
+        <option value="$PROJECT_DIR$/three/index2.html" />
+        <option value="$PROJECT_DIR$/three/index3.html" />
+        <option value="$PROJECT_DIR$/three/index4.html" />
+        <option value="$PROJECT_DIR$/three/index5.html" />
+        <option value="$PROJECT_DIR$/three/index6.html" />
+        <option value="$PROJECT_DIR$/three/index7..html" />
+        <option value="$PROJECT_DIR$/three/index8.html" />
+        <option value="$PROJECT_DIR$/three/js/lib/Universe.js" />
+        <option value="$PROJECT_DIR$/three/js/PS.js" />
+        <option value="$PROJECT_DIR$/three/main.css" />
         <option value="$PROJECT_DIR$/index.html" />
       </list>
     </option>
@@ -86,6 +140,78 @@
             </PATH_ELEMENT>
             <PATH_ELEMENT>
               <option name="myItemId" value="Presentation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Presentation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Presentation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="three" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Presentation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Presentation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="three" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="js" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Presentation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Presentation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="three" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="js" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="lib" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+          </PATH>
+          <PATH>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Presentation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.ProjectViewProjectNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="Presentation" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="three" />
+              <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
+            </PATH_ELEMENT>
+            <PATH_ELEMENT>
+              <option name="myItemId" value="img" />
               <option name="myItemType" value="com.intellij.ide.projectView.impl.nodes.PsiDirectoryNode" />
             </PATH_ELEMENT>
           </PATH>
@@ -197,9 +323,102 @@
     <breakpoint-manager />
   </component>
   <component name="editorHistoryManager">
+    <entry file="file://$PROJECT_DIR$/styles.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="459" column="3" selection-start="9021" selection-end="9024" vertical-scroll-proportion="-2.004995">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/slides.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding>
+            <element signature="n#!!doc" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/three/js/lib/Data.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="0" column="0" selection-start="0" selection-end="0" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/three/index6.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="23" column="29" selection-start="691" selection-end="691" vertical-scroll-proportion="0.3439681">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/three/index5.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="23" column="29" selection-start="691" selection-end="691" vertical-scroll-proportion="0.3439681">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/three/index4.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="23" column="29" selection-start="691" selection-end="691" vertical-scroll-proportion="0.3439681">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/three/index3.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="23" column="29" selection-start="691" selection-end="691" vertical-scroll-proportion="0.3439681">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/three/js/lib/Planet.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="255" column="16" selection-start="11929" selection-end="12236" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/three/js/PS.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="145" column="45" selection-start="6090" selection-end="6090" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/three/js/lib/Universe.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="100" column="0" selection-start="2403" selection-end="2403" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/three/main.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="3" column="14" selection-start="68" selection-end="68" vertical-scroll-proportion="0.0">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/three/index2.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="23" column="29" selection-start="691" selection-end="691" vertical-scroll-proportion="0.3439681">
+          <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/three/index1.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state line="23" column="29" selection-start="691" selection-end="691" vertical-scroll-proportion="0.3439681">
+          <folding />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state line="32" column="1" selection-start="1223" selection-end="1223" vertical-scroll-proportion="0.4785643">
+        <state line="52" column="0" selection-start="1690" selection-end="1690" vertical-scroll-proportion="0.3569292">
           <folding />
         </state>
       </provider>
