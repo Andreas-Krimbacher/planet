@@ -161,9 +161,6 @@ THREE.OrbitControls = function ( object, domElement ) {
 		// restrict phi to be betwee EPS and PI-EPS
 		phi = Math.max( EPS, Math.min( Math.PI - EPS, phi ) );
 
-        if(this.maxDist && position.length() > this.maxDist && scale > 1) //new
-            scale = 1; //new
-
 		var radius = offset.length() * scale;
 
 
@@ -211,7 +208,10 @@ THREE.OrbitControls = function ( object, domElement ) {
 
 		event.preventDefault();
 
-		if ( event.button === 2 ) return; // new
+        // new *********************************************************************************************************
+		if ( event.button === 2 ) return; // prevent right button move
+        // new *********************************************************************************************************
+
         if ( event.button === 0 || event.button === 2 ) {
 
 			state = STATE.ROTATE;

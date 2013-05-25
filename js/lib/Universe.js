@@ -32,7 +32,7 @@ PS.lib.Universe = Class.extend({
     //days of movement per animation cycle and speed
     //!!! must be the same as in the Planet class!!!
     daysSpeed1:0.005,
-    daysSpeed2:0.5,
+    daysSpeed2:1,
     daysSpeed3:100,
 
     // if the camera is set to a planet the planet object is assigned
@@ -81,7 +81,7 @@ PS.lib.Universe = Class.extend({
 
         //add orbit control
         this.orbitControl = new THREE.OrbitControls( this.camera , document.getElementById('webglOrbitControlCanvas'));
-        this.orbitControl.maxDist = 25000000;
+        this.orbitControl.maxDistance = 25000000;
 
         //add trackball control for right mouse button panning
         this.panControl = new THREE.TrackballControls( this.camera , document.getElementById('webglOrbitControlCanvas'));
@@ -128,11 +128,6 @@ PS.lib.Universe = Class.extend({
 
     //animation cycle
     run : function(){
-
-        //restart animation cycle
-        requestAnimationFrame( this.run.bind(this) );
-        this.renderer.render( this.scene, this.camera );
-
         //update camera controls
         this.orbitControl.update();
         this.panControl.update();
@@ -163,6 +158,11 @@ PS.lib.Universe = Class.extend({
             //update time slider
             PS.updateTimeSlider(this.date);
         }
+
+        //render the scene
+        this.renderer.render( this.scene, this.camera );
+        //restart animation cycle
+        requestAnimationFrame( this.run.bind(this) );
     },
 
     // stop planet move

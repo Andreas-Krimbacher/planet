@@ -69,7 +69,7 @@
         universe.addLight();
 
         // helper functions for production
-//        universe.showAxis('x');
+        universe.showAxis('x');
 //        universe.showAxis('y');
 //        universe.showAxis('z');
 //        universe.showAxis('-x');

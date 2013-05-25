@@ -79,21 +79,21 @@ PS.lib.Planet = Class.extend({
     rotAxisMoon : null,
 
 
-    //forward and backward rotation matrix
-    //for moons as a object which has as values a matrix for each moon
+    //forward and backward quaternion
+    //for moons as a object which has as values a quaternion for each moon
     //for all 3 speed level
-    rotWorldMatrixForwardSpeed1 : null,
-    rotWorldMatrixBackwardSpeed1 : null,
-    rotWorldMatrixMoonForwardSpeed1 : null,
-    rotWorldMatrixMoonBackwardSpeed1 : null,
-    rotWorldMatrixForwardSpeed2 : null,
-    rotWorldMatrixBackwardSpeed2 : null,
-    rotWorldMatrixMoonForwardSpeed2 : null,
-    rotWorldMatrixMoonBackwardSpeed2 : null,
-    rotWorldMatrixForwardSpeed3 : null,
-    rotWorldMatrixBackwardSpeed3 : null,
-    rotWorldMatrixMoonForwardSpeed3 : null,
-    rotWorldMatrixMoonBackwardSpeed3 : null,
+    quaternionForwardSpeed1 : null,
+    quaternionBackwardSpeed1 : null,
+    quaternionMoonForwardSpeed1 : null,
+    quaternionMoonBackwardSpeed1 : null,
+    quaternionForwardSpeed2 : null,
+    quaternionBackwardSpeed2 : null,
+    quaternionMoonForwardSpeed2 : null,
+    quaternionMoonBackwardSpeed2 : null,
+    quaternionForwardSpeed3 : null,
+    quaternionBackwardSpeed3 : null,
+    quaternionMoonForwardSpeed3 : null,
+    quaternionMoonBackwardSpeed3 : null,
 
     //camera object if camera is added to the planet
     camera : null,
@@ -101,8 +101,10 @@ PS.lib.Planet = Class.extend({
     //days of movement per animation cycle and speed
     //!!! must be the same as in the Universe class!!!
     daysSpeed1:0.005,
-    daysSpeed2:0.5,
+    daysSpeed2:1,
     daysSpeed3:100,
+
+    actualDay: 0,
 
     //intialize
     init : function(planetDataObject){
@@ -114,25 +116,31 @@ PS.lib.Planet = Class.extend({
     _createPlanet : function(){
 
 //        reset planet parameters for production
-//        this.planetDataObject.node = 0;
+//        this.planetDataObject.node = 90;
 //        this.planetDataObject.i = 0;
 //        this.planetDataObject.omega = 0;
 //        this.planetDataObject.MJ2000_True = 0;
 //        this.planetDataObject.e = 0;
-//        this.planetDataObject.AxialTilt = 40;
+//        this.planetDataObject.AxialTilt = 0;
 
         var planetDataObject = this.planetDataObject;
 
         //create containers
         this.objectGroup = new THREE.Object3D();
+        //enable quaternion for orbit
+        this.objectGroup.useQuaternion  = true;
 
         this.objectGroupPlanet = new THREE.Object3D();
+        //enable quaternion for orbit
+        this.objectGroupPlanet.useQuaternion  = true;
+        this.objectGroupPlanet.quaternion = new THREE.Quaternion();
         this.objectGroupPlanet.position.x = planetDataObject.a;
         this.objectGroup.add(this.objectGroupPlanet);
 
         this.objectGroupPlanetTilt = new THREE.Object3D();
         //(-1) because the Obliquity to orbit is from the axis which is perpendicular to the orbit
-        if(this.planetDataObject.AxialTilt) this.objectGroupPlanetTilt.rotation.z = (-1) * this.planetDataObject.AxialTilt * Math.PI/180;
+        //!! the tilt is applied in direction of the orbit, from north
+        if(this.planetDataObject.AxialTilt) this.objectGroupPlanetTilt.rotation.x = (-1) * this.planetDataObject.AxialTilt * Math.PI/180;
         this.objectGroupPlanet.add(this.objectGroupPlanetTilt);
 
         //create the line for the rotation axis
@@ -153,12 +161,12 @@ PS.lib.Planet = Class.extend({
             //intialize objects
             this.objectGroupMoon = {};
             this.orbitMoon = {};
-            this.rotWorldMatrixMoonForwardSpeed1 = {};
-            this.rotWorldMatrixMoonBackwardSpeed1 = {};
-            this.rotWorldMatrixMoonForwardSpeed2 = {};
-            this.rotWorldMatrixMoonBackwardSpeed2 = {};
-            this.rotWorldMatrixMoonForwardSpeed3 = {};
-            this.rotWorldMatrixMoonBackwardSpeed3 = {};
+            this.quaternionMoonForwardSpeed1 = {};
+            this.quaternionMoonBackwardSpeed1 = {};
+            this.quaternionMoonForwardSpeed2 = {};
+            this.quaternionMoonBackwardSpeed2 = {};
+            this.quaternionMoonForwardSpeed3 = {};
+            this.quaternionMoonBackwardSpeed3 = {};
             this.rotAxisMoon = {};
 
             // create each moon and moon orbit
@@ -166,6 +174,8 @@ PS.lib.Planet = Class.extend({
             for(var x in planetDataObject.moon){
                 //create the moon orbit
                 this.orbitMoon[planetDataObject.moon[x].Name] = this._createOrbit(parseFloat(planetDataObject.moon[x].a)+(planetDataObject.Durchm1/2));
+                //enable quaternion for orbit
+                this.orbitMoon[planetDataObject.moon[x].Name].useQuaternion  = true;
 
                 //add the moon orbit to the objectGroupPlanet or objectGroupPlanetTilt depending on the toEcliptic parameter
                 if(planetDataObject.moon[x].toEcliptic) this.objectGroupPlanet.add(this.orbitMoon[planetDataObject.moon[x].Name]);
@@ -173,6 +183,8 @@ PS.lib.Planet = Class.extend({
 
                 //create the objectGroupMoon container
                 this.objectGroupMoon[planetDataObject.moon[x].Name] = new THREE.Object3D();
+                //enable quaternion for orbit
+                this.objectGroupMoon[planetDataObject.moon[x].Name].useQuaternion  = true;
 
                 // create the moon texture
                 if(planetDataObject.moon[x].img){
@@ -196,14 +208,14 @@ PS.lib.Planet = Class.extend({
                 if(planetDataObject.moon[x].toEcliptic) this.objectGroupPlanet.add(this.objectGroupMoon[planetDataObject.moon[x].Name]);
                 else this.objectGroupPlanetTilt.add(this.objectGroupMoon[planetDataObject.moon[x].Name]);
 //                reset planet parameters for production
-//                this.planetDataObject.moon[x].node = 90;
+//                this.planetDataObject.moon[x].node = 45;
 //                this.planetDataObject.moon[x].i = 45;
 //                this.planetDataObject.moon[x].omega = 0;
 //                this.planetDataObject.moon[x].MJ2000_True = 0;
-//                this.planetDataObject.moon[x].e = 0;
+//                this.planetDataObject.moon[x].e = 0.7;
 
                 //apply the moon orbit parameters to the objectGroupMoon and the orbitMoon
-                this._alignOrbit( this.objectGroupMoon[planetDataObject.moon[x].Name] , planetDataObject.moon[x],this.orbitMoon[planetDataObject.moon[x].Name],(planetDataObject.a));
+                this._alignOrbit( this.objectGroupMoon[planetDataObject.moon[x].Name] , planetDataObject.moon[x],this.orbitMoon[planetDataObject.moon[x].Name],true);
             }
         }
         //--------------------------------------------------------------------------------------------------------------
@@ -217,6 +229,7 @@ PS.lib.Planet = Class.extend({
                 var material = new THREE.MeshLambertMaterial( { map: texture } );
             }
             else{
+                // for the planets we need the MeshPhongMaterial to reflect the point light of the sun
                 var material = new THREE.MeshPhongMaterial( {map: texture, ambient: 0x333333} );
             }
         }
@@ -233,10 +246,12 @@ PS.lib.Planet = Class.extend({
         //create the planet orbit
         if(this.planetDataObject.Status != 'Sonne'){
             this.orbit = this._createOrbit((planetDataObject.a));
+            //enable quaternion for orbit
+            this.orbit.useQuaternion  = true;
         }
 
         //apply the planet orbit parameters to the objectGroup and the orbit
-        if(this.planetDataObject.Status != 'Sonne') this._alignOrbit( this.objectGroup ,this.planetDataObject, this.orbit);
+        if(this.planetDataObject.Status != 'Sonne') this._alignOrbit( this.objectGroup ,this.planetDataObject, this.orbit, false);
         //--------------------------------------------------------------------------------------------------------------
     },
     //create a orbit, conatiner plus line geometry
@@ -265,121 +280,115 @@ PS.lib.Planet = Class.extend({
     // Parameters: object: objectGroup or objectgroupMoon
     //              options: orbit paramters, planet or moon parameter object
     //              orbit: orbit object (planet or moon)
-    //              moonTranslateX: the difference of the cneter of the objectgroupMoon to the center of the objectGroup
-    //                              only needed wenn a objectgroupMoon is provided to apply the eccentricity to the objectgroupMoon
-    _alignOrbit : function(object,options,orbit,moonTranslateX){
-        // Longitude of the ascending node, rotation axis: y
-        var axis = new THREE.Vector3(0,1,0);
-        var rotWorldMatrix = new THREE.Matrix4();
-        rotWorldMatrix.makeRotationAxis(axis.normalize(), options.node*Math.PI/180);
-        rotWorldMatrix.multiply(object.matrix); // pre-multiply
-        object.matrix = rotWorldMatrix;
-        object.rotation.setEulerFromRotationMatrix(object.matrix);
+    //              isMoon: true if it is a moon
+    _alignOrbit : function(object,options,orbit,isMoon){
+        var quaternion = new THREE.Quaternion();
+        var axis,axis_x,axis_y,axis_z;
 
+        // Longitude of the ascending node, rotation axis: y
+        object.quaternion = new THREE.Quaternion();
+        object.quaternion.setFromAxisAngle(new THREE.Vector3(0,1,0), options.node*Math.PI/180);
+        object.quaternion.normalize();
+
+        if(!isMoon){
+            //rotate the object to keep the heading with the x axis
+            quaternion.setFromAxisAngle(new THREE.Vector3(0,1,0), (-1) * (parseFloat(options.node))*Math.PI/180);
+            this.objectGroupPlanet.quaternion.multiply(quaternion);
+            this.objectGroupPlanet.quaternion.normalize();
+        }
 
         // Inclination, rotation axis: center to ascending node
-        var axis_x = Math.cos(options.node*Math.PI/180);
-        var axis_y = 0;
-        var axis_z = Math.sin(-options.node*Math.PI/180);
-        axis = new THREE.Vector3(axis_x,axis_y,axis_z);
-        rotWorldMatrix = new THREE.Matrix4();
-        rotWorldMatrix.makeRotationAxis(axis.normalize(), options.i*Math.PI/180);
-        rotWorldMatrix.multiply(object.matrix); // pre-multiply
-        object.matrix = rotWorldMatrix;
-        object.rotation.setEulerFromRotationMatrix(object.matrix);
+        // dont move the object, because the object is at the ascending node
 
         // Inclination orbit, rotation axis: center to ascending node
         if(orbit){
-            rotWorldMatrix.multiply(orbit.matrix); // pre-multiply
-            orbit.matrix = rotWorldMatrix;
-            orbit.rotation.setEulerFromRotationMatrix(orbit.matrix);
+            axis_x = Math.cos(options.node*Math.PI/180);
+            axis_y = 0;
+            axis_z = Math.sin(-options.node*Math.PI/180);
+            axis = new THREE.Vector3(axis_x,axis_y,axis_z);
+
+            orbit.quaternion = new THREE.Quaternion();
+            orbit.quaternion.setFromAxisAngle(axis.normalize(), options.i*Math.PI/180);
+            object.quaternion.normalize();
         }
 
         // Argument of perihelion, rotation axis: perpendicular to the orbit
         axis_y = Math.cos(options.i*Math.PI/180);
-        axis_x = Math.sin(options.i*Math.PI/180) * Math.sin(options.node*Math.PI/180);
-        axis_z = Math.sin(options.i*Math.PI/180) * Math.cos(-options.node*Math.PI/180);
+        axis_x = Math.sin(options.i*Math.PI/180) * Math.sin(-options.node*Math.PI/180);
+        axis_z = Math.sin(options.i*Math.PI/180) * Math.cos(options.node*Math.PI/180);
         var rotAxis = new THREE.Vector3(axis_x,axis_y,axis_z);
-        rotAxis.normalize();
-        rotWorldMatrix = new THREE.Matrix4();
-        rotWorldMatrix.makeRotationAxis(rotAxis, (parseFloat(options.omega))*Math.PI/180);
-        rotWorldMatrix.multiply(object.matrix); // pre-multiply
-        object.matrix = rotWorldMatrix;
-        object.rotation.setEulerFromRotationMatrix(object.matrix);
 
+        rotAxis.applyQuaternion(object.quaternion);
+        quaternion.setFromAxisAngle(rotAxis.normalize(), (parseFloat(options.omega))*Math.PI/180);
+        object.quaternion.multiply(quaternion);
+        object.quaternion.normalize();
 
         // Eccentricity ------------------------------------------------------------------------------------------------
         // !!We need to update the world matrix of the object to apply all previous rotations
         // !!otherwise we get a wrong position for the perihelion
         object.updateMatrixWorld();
-
         // Get the Vector from the center to the perihelion
         var perihel = new THREE.Vector3();
         perihel.getPositionFromMatrix(object.children[0].matrixWorld);
 
         // Set the amount of the shift
-        // !!If the object was alredy translated by a other operation
-        // !!we have to move the vector for the eccentricity shift as well
-        if(moonTranslateX){
-            perihel.x -= moonTranslateX;
-            perihel.setLength(parseFloat(options.a*options.e));
-        }
-        else{
-            perihel.setLength((options.a*options.e));
-        }
+        perihel.setLength((options.a*options.e));
 
         // Apply eccentricity
         object.position.add(perihel.clone().negate());
         if(orbit) orbit.position.add(perihel.clone().negate());
         //--------------------------------------------------------------------------------------------------------------
 
-
         // True anomaly, rotation axis: perpendicular to the orbit
-        rotWorldMatrix = new THREE.Matrix4();
-        rotWorldMatrix.makeRotationAxis(rotAxis, (parseFloat(options.MJ2000_True))*Math.PI/180);
-        rotWorldMatrix.multiply(object.matrix); // pre-multiply
-        object.matrix = rotWorldMatrix;
-        object.rotation.setEulerFromRotationMatrix(object.matrix);
+        quaternion.setFromAxisAngle(rotAxis, (parseFloat(options.MJ2000_True))*Math.PI/180);
+        object.quaternion.multiply(quaternion);
+        object.quaternion.normalize();
 
+        if(!isMoon){
+            //rotate the object to keep the heading with the x axis
+            quaternion.setFromAxisAngle(rotAxis, (-1) * (parseFloat(options.MJ2000_True)+parseFloat(options.omega))*Math.PI/180);
+            this.objectGroupPlanet.quaternion.multiply(quaternion);
+            this.objectGroupPlanet.quaternion.normalize();
+        }
 
         // Create the rotation matrix for the animation function
-        var rotWorldMatrixForwardSpeed1 = new THREE.Matrix4();
-        var rotWorldMatrixBackwardSpeed1 = new THREE.Matrix4();
-        var rotWorldMatrixForwardSpeed2 = new THREE.Matrix4();
-        var rotWorldMatrixBackwardSpeed2 = new THREE.Matrix4();
-        var rotWorldMatrixForwardSpeed3 = new THREE.Matrix4();
-        var rotWorldMatrixBackwardSpeed3 = new THREE.Matrix4();
-        if(moonTranslateX){
+        var quaternionForwardSpeed1 = new THREE.Quaternion();
+        var quaternionBackwardSpeed1 = new THREE.Quaternion();
+        var quaternionForwardSpeed2 = new THREE.Quaternion();
+        var quaternionBackwardSpeed2 = new THREE.Quaternion();
+        var quaternionForwardSpeed3 = new THREE.Quaternion();
+        var quaternionBackwardSpeed3 = new THREE.Quaternion();
+        if(isMoon){
             // for a monn
-            rotWorldMatrixForwardSpeed1.makeRotationAxis(rotAxis, (2*Math.PI) / options.Periode * (this.daysSpeed1));
-            rotWorldMatrixBackwardSpeed1.makeRotationAxis(rotAxis, - (2*Math.PI) / options.Periode * (this.daysSpeed1));
-            this.rotWorldMatrixMoonForwardSpeed1[options.Name] = rotWorldMatrixForwardSpeed1;
-            this.rotWorldMatrixMoonBackwardSpeed1[options.Name] = rotWorldMatrixBackwardSpeed1;
-            rotWorldMatrixForwardSpeed2.makeRotationAxis(rotAxis, (2*Math.PI) / options.Periode * (this.daysSpeed2));
-            rotWorldMatrixBackwardSpeed2.makeRotationAxis(rotAxis, - (2*Math.PI) / options.Periode * (this.daysSpeed2));
-            this.rotWorldMatrixMoonForwardSpeed2[options.Name] = rotWorldMatrixForwardSpeed2;
-            this.rotWorldMatrixMoonBackwardSpeed2[options.Name] = rotWorldMatrixBackwardSpeed2;
-            rotWorldMatrixForwardSpeed3.makeRotationAxis(rotAxis, (2*Math.PI) / options.Periode * (this.daysSpeed3));
-            rotWorldMatrixBackwardSpeed3.makeRotationAxis(rotAxis, - (2*Math.PI) / options.Periode * (this.daysSpeed3));
-            this.rotWorldMatrixMoonForwardSpeed3[options.Name] = rotWorldMatrixForwardSpeed3;
-            this.rotWorldMatrixMoonBackwardSpeed3[options.Name] = rotWorldMatrixBackwardSpeed3;
+            quaternionForwardSpeed1.setFromAxisAngle(rotAxis, (2*Math.PI) / options.Periode * (this.daysSpeed1));
+            quaternionBackwardSpeed1.setFromAxisAngle(rotAxis, - (2*Math.PI) / options.Periode * (this.daysSpeed1));
+            this.quaternionMoonForwardSpeed1[options.Name] = quaternionForwardSpeed1;
+            this.quaternionMoonBackwardSpeed1[options.Name] = quaternionBackwardSpeed1;
+            quaternionForwardSpeed2.setFromAxisAngle(rotAxis, (2*Math.PI) / options.Periode * (this.daysSpeed2));
+            quaternionBackwardSpeed2.setFromAxisAngle(rotAxis, - (2*Math.PI) / options.Periode * (this.daysSpeed2));
+            this.quaternionMoonForwardSpeed2[options.Name] = quaternionForwardSpeed2;
+            this.quaternionMoonBackwardSpeed2[options.Name] = quaternionBackwardSpeed2;
+            quaternionForwardSpeed3.setFromAxisAngle(rotAxis, (2*Math.PI) / options.Periode * (this.daysSpeed3));
+            quaternionBackwardSpeed3.setFromAxisAngle(rotAxis, - (2*Math.PI) / options.Periode * (this.daysSpeed3));
+            this.quaternionMoonForwardSpeed3[options.Name] = quaternionForwardSpeed3;
+            this.quaternionMoonBackwardSpeed3[options.Name] = quaternionBackwardSpeed3;
             // save the rotation axis (perpendicular to the orbit)
             this.rotAxisMoon[options.Name] = rotAxis;
         }
         else{
             // for a planet
-            rotWorldMatrixForwardSpeed1.makeRotationAxis(rotAxis, (2*Math.PI) * (this.daysSpeed1) / options.Periode);
-            rotWorldMatrixBackwardSpeed1.makeRotationAxis(rotAxis, - (2*Math.PI) * (this.daysSpeed1) / options.Periode);
-            this.rotWorldMatrixForwardSpeed1 = rotWorldMatrixForwardSpeed1;
-            this.rotWorldMatrixBackwardSpeed1 = rotWorldMatrixBackwardSpeed1;
-            rotWorldMatrixForwardSpeed2.makeRotationAxis(rotAxis, (2*Math.PI) * (this.daysSpeed2) / options.Periode);
-            rotWorldMatrixBackwardSpeed2.makeRotationAxis(rotAxis, - (2*Math.PI) * (this.daysSpeed2) / options.Periode);
-            this.rotWorldMatrixForwardSpeed2 = rotWorldMatrixForwardSpeed2;
-            this.rotWorldMatrixBackwardSpeed2 = rotWorldMatrixBackwardSpeed2;
-            rotWorldMatrixForwardSpeed3.makeRotationAxis(rotAxis, (2*Math.PI) * (this.daysSpeed3)  / options.Periode);
-            rotWorldMatrixBackwardSpeed3.makeRotationAxis(rotAxis, - (2*Math.PI) * (this.daysSpeed3) / options.Periode);
-            this.rotWorldMatrixForwardSpeed3 = rotWorldMatrixForwardSpeed3;
-            this.rotWorldMatrixBackwardSpeed3 = rotWorldMatrixBackwardSpeed3;
+            quaternionForwardSpeed1.setFromAxisAngle(rotAxis, (2*Math.PI) * (this.daysSpeed1) / options.Periode);
+            quaternionBackwardSpeed1.setFromAxisAngle(rotAxis, - (2*Math.PI) * (this.daysSpeed1) / options.Periode);
+            this.quaternionForwardSpeed1 = quaternionForwardSpeed1;
+            this.quaternionBackwardSpeed1 = quaternionBackwardSpeed1;
+            quaternionForwardSpeed2.setFromAxisAngle(rotAxis, (2*Math.PI) * (this.daysSpeed2) / options.Periode);
+            quaternionBackwardSpeed2.setFromAxisAngle(rotAxis, - (2*Math.PI) * (this.daysSpeed2) / options.Periode);
+            this.quaternionForwardSpeed2 = quaternionForwardSpeed2;
+            this.quaternionBackwardSpeed2 = quaternionBackwardSpeed2;
+            quaternionForwardSpeed3.setFromAxisAngle(rotAxis, (2*Math.PI) * (this.daysSpeed3)  / options.Periode);
+            quaternionBackwardSpeed3.setFromAxisAngle(rotAxis, - (2*Math.PI) * (this.daysSpeed3) / options.Periode);
+            this.quaternionForwardSpeed3 = quaternionForwardSpeed3;
+            this.quaternionBackwardSpeed3 = quaternionBackwardSpeed3;
             // save the rotation axis (perpendicular to the orbit)
             this.rotAxis = rotAxis;
         }
@@ -389,25 +398,19 @@ PS.lib.Planet = Class.extend({
     //              animateMoons: true/false
     //              animateRotation: true/false (rotation of the planet around the planet rotation axis)
     updateForward : function(speed,animateMoons,animateRotation){
-        var rotWorldMatrix;
-        if(this.rotWorldMatrixForwardSpeed1){
-            //planet rotation on orbit
-            if(speed == 2) rotWorldMatrix = this.rotWorldMatrixForwardSpeed2.clone();
-            else if(speed == 3) rotWorldMatrix = this.rotWorldMatrixForwardSpeed3.clone();
-            else rotWorldMatrix = this.rotWorldMatrixForwardSpeed1.clone();
+        if(this.quaternionForwardSpeed1){
 
-            rotWorldMatrix.multiply(this.objectGroup.matrix); // pre-multiply
-            this.objectGroup.matrix = rotWorldMatrix;
-            this.objectGroup.rotation.setEulerFromRotationMatrix(this.objectGroup.matrix);
+            //planet rotation on orbit
+            if(speed == 2) this.objectGroup.quaternion.multiply(this.quaternionForwardSpeed2);
+            else if(speed == 3) this.objectGroup.quaternion.multiply(this.quaternionForwardSpeed3);
+            else this.objectGroup.quaternion.multiply(this.quaternionForwardSpeed1);
+            this.objectGroup.quaternion.normalize();
 
             //rotate the objectGroupPlanet to keep the heading with the x axis
-            if(speed == 2) rotWorldMatrix = this.rotWorldMatrixBackwardSpeed2.clone();
-            else if(speed == 3) rotWorldMatrix = this.rotWorldMatrixBackwardSpeed3.clone();
-            else rotWorldMatrix = this.rotWorldMatrixBackwardSpeed1.clone();
-
-            rotWorldMatrix.multiply(this.objectGroupPlanet.matrix); // pre-multiply
-            this.objectGroupPlanet.matrix = rotWorldMatrix;
-            this.objectGroupPlanet.rotation.setEulerFromRotationMatrix(this.objectGroupPlanet.matrix);
+            if(speed == 2) this.objectGroupPlanet.quaternion.multiply(this.quaternionBackwardSpeed2);
+            else if(speed == 3) this.objectGroupPlanet.quaternion.multiply(this.quaternionBackwardSpeed3);
+            else this.objectGroupPlanet.quaternion.multiply(this.quaternionBackwardSpeed1);
+            this.objectGroupPlanet.quaternion.normalize();
 
             if(animateRotation && this.planetDataObject.Rotation){
                 //rotate the planet around the planets rotation axis,
@@ -417,66 +420,13 @@ PS.lib.Planet = Class.extend({
             }
         }
 
-        if(animateMoons && this.rotWorldMatrixMoonForwardSpeed1){
-            for(var x in this.rotWorldMatrixMoonForwardSpeed1){
-                //moon rotations
-                if(this.planetDataObject.moon[x].varNode){
-                    var days;
-                    if(speed == 2) days = this.daysSpeed2;
-                    else if(speed == 3) days = this.daysSpeed3;
-                    else days = this.daysSpeed1;
-
-                    //apply a change of the Longitude of the ascending node to the moon
-                    rotWorldMatrix = new THREE.Matrix4();
-                    rotWorldMatrix.makeRotationAxis(new THREE.Vector3(0,1,0), (days/365.2425) * this.planetDataObject.moon[x].varNode * (Math.PI/180));
-                    rotWorldMatrix.multiply(this.objectGroupMoon[x].matrix); // pre-multiply
-                    this.objectGroupMoon[x].matrix = rotWorldMatrix;
-                    this.objectGroupMoon[x].rotation.setEulerFromRotationMatrix(this.objectGroupMoon[x].matrix);
-
-                    //apply a change of the Longitude of the ascending node to the moon orbit
-                    rotWorldMatrix = new THREE.Matrix4();
-                    rotWorldMatrix.makeRotationAxis(new THREE.Vector3(0,1,0), (days/365.2425) * this.planetDataObject.moon[x].varNode * (Math.PI/180));
-                    rotWorldMatrix.multiply(this.orbitMoon[x].matrix); // pre-multiply
-                    this.orbitMoon[x].matrix = rotWorldMatrix;
-                    this.orbitMoon[x].rotation.setEulerFromRotationMatrix(this.orbitMoon[x].matrix);
-
-                    //adjust the moon rotation axis
-                    rotWorldMatrix = new THREE.Matrix4();
-                    rotWorldMatrix.makeRotationAxis(new THREE.Vector3(0,1,0), (days/365.2425) * this.planetDataObject.moon[x].varNode * (Math.PI/180));
-                    this.rotAxisMoon[x].applyMatrix4( rotWorldMatrix );
-
-                    //moon rotation on orbit, with adjusted rotation axis
-                    rotWorldMatrix = new THREE.Matrix4();
-                    rotWorldMatrix.makeRotationAxis(this.rotAxisMoon[x], (2*Math.PI) / this.planetDataObject.moon[x].Periode * (days));
-                    rotWorldMatrix.multiply(this.objectGroupMoon[x].matrix); // pre-multiply
-                    this.objectGroupMoon[x].matrix = rotWorldMatrix;
-                    this.objectGroupMoon[x].rotation.setEulerFromRotationMatrix(this.objectGroupMoon[x].matrix);
-
-                }
-                else{
+        if(animateMoons && this.quaternionMoonForwardSpeed1){
+            for(var x in this.quaternionMoonForwardSpeed1){
                     //moon rotation on orbit
-                    if(speed == 2) rotWorldMatrix = this.rotWorldMatrixMoonForwardSpeed2[x].clone();
-                    else if(speed == 3) rotWorldMatrix = this.rotWorldMatrixMoonForwardSpeed3[x].clone();
-                    else rotWorldMatrix = this.rotWorldMatrixMoonForwardSpeed1[x].clone();
-
-                    rotWorldMatrix.multiply(this.objectGroupMoon[x].matrix);
-                    this.objectGroupMoon[x].matrix = rotWorldMatrix;
-                    this.objectGroupMoon[x].rotation.setEulerFromRotationMatrix(this.objectGroupMoon[x].matrix);
-                }
-
-                if(this.planetDataObject.moon[x].varOmega){
-                    var days;
-                    if(speed == 2) days = this.daysSpeed2;
-                    else if(speed == 3) days = this.daysSpeed3;
-                    else days = this.daysSpeed1;
-
-                    //apply a change of the Argument of perihelion
-                    rotWorldMatrix = new THREE.Matrix4();
-                    rotWorldMatrix.makeRotationAxis(this.rotAxisMoon[x], (days/365.2425) * this.planetDataObject.moon[x].varOmega * (Math.PI/180));
-                    rotWorldMatrix.multiply(this.objectGroupMoon[x].matrix); // pre-multiply
-                    this.objectGroupMoon[x].matrix = rotWorldMatrix;
-                    this.objectGroupMoon[x].rotation.setEulerFromRotationMatrix(this.objectGroupMoon[x].matrix);
-                }
+                    if(speed == 2) this.objectGroupMoon[x].quaternion.multiply(this.quaternionMoonForwardSpeed2[x]);
+                    else if(speed == 3) this.objectGroupMoon[x].quaternion.multiply(this.quaternionMoonForwardSpeed3[x]);
+                    else this.objectGroupMoon[x].quaternion.multiply(this.quaternionMoonForwardSpeed1[x]);
+                    this.objectGroupMoon[x].quaternion.normalize();
             }
         }
     },
@@ -485,94 +435,35 @@ PS.lib.Planet = Class.extend({
     //              animateMoons: true/false
     //              animateRotation: true/false (rotation of the planet around the planet rotation axis)
     updateBackward : function(speed,animateMoons,animateRotation){
-        var rotWorldMatrix;
-        if(this.rotWorldMatrixBackwardSpeed1){
-            //planet rotation on orbit
-            if(speed == 2) rotWorldMatrix = this.rotWorldMatrixBackwardSpeed2.clone();
-            else if(speed == 3) rotWorldMatrix = this.rotWorldMatrixBackwardSpeed3.clone();
-            else rotWorldMatrix = this.rotWorldMatrixBackwardSpeed1.clone();
+        if(this.quaternionBackwardSpeed1){
 
-            rotWorldMatrix.multiply(this.objectGroup.matrix); // pre-multiply
-            this.objectGroup.matrix = rotWorldMatrix;
-            this.objectGroup.rotation.setEulerFromRotationMatrix(this.objectGroup.matrix);
+            //planet rotation on orbit
+            if(speed == 2) this.objectGroup.quaternion.multiply(this.quaternionBackwardSpeed2);
+            else if(speed == 3) this.objectGroup.quaternion.multiply(this.quaternionBackwardSpeed3);
+            else this.objectGroup.quaternion.multiply(this.quaternionBackwardSpeed1);
+            this.objectGroup.quaternion.normalize();
 
             //rotate the objectGroupPlanet to keep the heading with the x axis
-            if(speed == 2) rotWorldMatrix = this.rotWorldMatrixForwardSpeed2.clone();
-            else if(speed == 3) rotWorldMatrix = this.rotWorldMatrixForwardSpeed3.clone();
-            else rotWorldMatrix = this.rotWorldMatrixForwardSpeed1.clone();
-
-            rotWorldMatrix.multiply(this.objectGroupPlanet.matrix); // pre-multiply
-            this.objectGroupPlanet.matrix = rotWorldMatrix;
-            this.objectGroupPlanet.rotation.setEulerFromRotationMatrix(this.objectGroupPlanet.matrix);
+            if(speed == 2) this.objectGroupPlanet.quaternion.multiply(this.quaternionForwardSpeed2);
+            else if(speed == 3) this.objectGroupPlanet.quaternion.multiply(this.quaternionForwardSpeed3);
+            else this.objectGroupPlanet.quaternion.multiply(this.quaternionForwardSpeed1);
+            this.objectGroupPlanet.quaternion.normalize();
 
             if(animateRotation && this.planetDataObject.Rotation){
                 //rotate the planet around the planets rotation axis,
-                if(speed == 2) this.planetMesh.rotation.y -= 2 * Math.PI * this.daysSpeed2 / this.planetDataObject.Rotation;
-                else if(speed == 3) this.planetMesh.rotation.y -= 2 * Math.PI * this.daysSpeed3 / this.planetDataObject.Rotation;
-                else this.planetMesh.rotation.y -= 2 * Math.PI * this.daysSpeed1 / this.planetDataObject.Rotation;
+                if(speed == 2) this.planetMesh.rotation.y += 2 * Math.PI * this.daysSpeed2 / this.planetDataObject.Rotation;
+                else if(speed == 3) this.planetMesh.rotation.y += 2 * Math.PI * this.daysSpeed3 / this.planetDataObject.Rotation;
+                else this.planetMesh.rotation.y += 2 * Math.PI * this.daysSpeed1 / this.planetDataObject.Rotation;
             }
         }
 
-        if(animateMoons && this.rotWorldMatrixMoonBackwardSpeed1){
-            for(var x in this.rotWorldMatrixMoonBackwardSpeed1){
-                //moon rotations
-                if(this.planetDataObject.moon[x].varNode){
-                    var days;
-                    if(speed == 2) days = this.daysSpeed2;
-                    else if(speed == 3) days = this.daysSpeed3;
-                    else days = this.daysSpeed1;
-
-                    //apply a change of the Longitude of the ascending node to the moon
-                    rotWorldMatrix = new THREE.Matrix4();
-                    rotWorldMatrix.makeRotationAxis(new THREE.Vector3(0,1,0), (days/365.2425) * -this.planetDataObject.moon[x].varNode * (Math.PI/180));
-                    rotWorldMatrix.multiply(this.objectGroupMoon[x].matrix); // pre-multiply
-                    this.objectGroupMoon[x].matrix = rotWorldMatrix;
-                    this.objectGroupMoon[x].rotation.setEulerFromRotationMatrix(this.objectGroupMoon[x].matrix);
-
-                    //apply a change of the Longitude of the ascending node to the moon orbit
-                    rotWorldMatrix = new THREE.Matrix4();
-                    rotWorldMatrix.makeRotationAxis(new THREE.Vector3(0,1,0), (days/365.2425) * -this.planetDataObject.moon[x].varNode * (Math.PI/180));
-                    rotWorldMatrix.multiply(this.orbitMoon[x].matrix); // pre-multiply
-                    this.orbitMoon[x].matrix = rotWorldMatrix;
-                    this.orbitMoon[x].rotation.setEulerFromRotationMatrix(this.orbitMoon[x].matrix);
-
-                    //adjust the moon rotation axis
-                    rotWorldMatrix = new THREE.Matrix4();
-                    rotWorldMatrix.makeRotationAxis(new THREE.Vector3(0,1,0), (days/365.2425) * -this.planetDataObject.moon[x].varNode * (Math.PI/180));
-                    this.rotAxisMoon[x].applyMatrix4( rotWorldMatrix );
-
-                    //moon rotation on orbit, with adjusted rotation axis
-                    rotWorldMatrix = new THREE.Matrix4();
-                    rotWorldMatrix.makeRotationAxis(this.rotAxisMoon[x], (-1) * (2*Math.PI) / this.planetDataObject.moon[x].Periode * (days));
-                    rotWorldMatrix.multiply(this.objectGroupMoon[x].matrix); // pre-multiply
-                    this.objectGroupMoon[x].matrix = rotWorldMatrix;
-                    this.objectGroupMoon[x].rotation.setEulerFromRotationMatrix(this.objectGroupMoon[x].matrix);
-                }
-                else{
-                    //moon rotation on orbit
-                    if(speed == 2) rotWorldMatrix = this.rotWorldMatrixMoonBackwardSpeed2[x].clone();
-                    else if(speed == 3) rotWorldMatrix = this.rotWorldMatrixMoonBackwardSpeed3[x].clone();
-                    else rotWorldMatrix = this.rotWorldMatrixMoonBackwardSpeed1[x].clone();
-
-                    rotWorldMatrix.multiply(this.objectGroupMoon[x].matrix);
-                    this.objectGroupMoon[x].matrix = rotWorldMatrix;
-                    this.objectGroupMoon[x].rotation.setEulerFromRotationMatrix(this.objectGroupMoon[x].matrix);
-                }
-
-                if(this.planetDataObject.moon[x].varOmega){
-                    var days;
-                    if(speed == 2) days = this.daysSpeed2;
-                    else if(speed == 3) days = this.daysSpeed3;
-                    else days = this.daysSpeed1;
-
-                    //apply a change of the Argument of perihelion
-                    rotWorldMatrix = new THREE.Matrix4();
-                    rotWorldMatrix.makeRotationAxis(this.rotAxisMoon[x], (days/365.2425) * -this.planetDataObject.moon[x].varOmega * (Math.PI/180));
-                    rotWorldMatrix.multiply(this.objectGroupMoon[x].matrix); // pre-multiply
-                    this.objectGroupMoon[x].matrix = rotWorldMatrix;
-                    this.objectGroupMoon[x].rotation.setEulerFromRotationMatrix(this.objectGroupMoon[x].matrix);
-                }
-
+        if(animateMoons && this.quaternionMoonBackwardSpeed1){
+            for(var x in this.quaternionMoonBackwardSpeed1){
+                //moon rotation on orbit
+                if(speed == 2) this.objectGroupMoon[x].quaternion.multiply(this.quaternionMoonBackwardSpeed2[x]);
+                else if(speed == 3) this.objectGroupMoon[x].quaternion.multiply(this.quaternionMoonBackwardSpeed3[x]);
+                else this.objectGroupMoon[x].quaternion.multiply(this.quaternionMoonBackwardSpeed1[x]);
+                this.objectGroupMoon[x].quaternion.normalize();
             }
         }
     },
@@ -595,59 +486,23 @@ PS.lib.Planet = Class.extend({
     // move the planet and moons
     // Parameter: amount off days, can be a float and postive or negative
     moveDays : function(days){
+        var quaternion = new THREE.Quaternion();
+
         //planet rotation on orbit
-        var rotWorldMatrix = new THREE.Matrix4();
-        rotWorldMatrix.makeRotationAxis(this.rotAxis, (days*2*Math.PI) / this.planetDataObject.Periode);
-        rotWorldMatrix.multiply(this.objectGroup.matrix); // pre-multiply
-        this.objectGroup.matrix = rotWorldMatrix;
-        this.objectGroup.rotation.setEulerFromRotationMatrix(this.objectGroup.matrix);
+        quaternion.setFromAxisAngle(this.rotAxis, (days*2*Math.PI) / this.planetDataObject.Periode);
+        this.objectGroup.quaternion.multiply(quaternion);
+        this.objectGroup.quaternion.normalize();
 
         //rotate the objectGroupPlanet to keep the heading with the x axis
-        rotWorldMatrix = new THREE.Matrix4();
-        rotWorldMatrix.makeRotationAxis(this.rotAxis, (-1) * (days*2*Math.PI) / this.planetDataObject.Periode);
-        rotWorldMatrix.multiply(this.objectGroupPlanet.matrix); // pre-multiply
-        this.objectGroupPlanet.matrix = rotWorldMatrix;
-        this.objectGroupPlanet.rotation.setEulerFromRotationMatrix(this.objectGroupPlanet.matrix);
+        quaternion.setFromAxisAngle(this.rotAxis, (-1) * (days*2*Math.PI) / this.planetDataObject.Periode);
+        this.objectGroupPlanet.quaternion.multiply(quaternion);
+        this.objectGroupPlanet.quaternion.normalize();
 
         //moon rotations
         for(var x in this.rotAxisMoon){
-            if(this.planetDataObject.moon[x].varNode){
-                //apply a change of the Longitude of the ascending node to the moon
-                rotWorldMatrix = new THREE.Matrix4();
-                rotWorldMatrix.makeRotationAxis(new THREE.Vector3(0,1,0), (days/365.2425) * this.planetDataObject.moon[x].varNode * (Math.PI/180));
-                rotWorldMatrix.multiply(this.objectGroupMoon[x].matrix); // pre-multiply
-                this.objectGroupMoon[x].matrix = rotWorldMatrix;
-                this.objectGroupMoon[x].rotation.setEulerFromRotationMatrix(this.objectGroupMoon[x].matrix);
-
-                //apply a change of the Longitude of the ascending node to the moon orbit
-                rotWorldMatrix = new THREE.Matrix4();
-                rotWorldMatrix.makeRotationAxis(new THREE.Vector3(0,1,0), (days/365.2425) * this.planetDataObject.moon[x].varNode * (Math.PI/180));
-                rotWorldMatrix.multiply(this.orbitMoon[x].matrix); // pre-multiply
-                this.orbitMoon[x].matrix = rotWorldMatrix;
-                this.orbitMoon[x].rotation.setEulerFromRotationMatrix(this.orbitMoon[x].matrix);
-
-                //adjust the moon rotation axis
-                rotWorldMatrix = new THREE.Matrix4();
-                rotWorldMatrix.makeRotationAxis(new THREE.Vector3(0,1,0), (days/365.2425) * this.planetDataObject.moon[x].varNode * (Math.PI/180));
-                this.rotAxisMoon[x].applyMatrix4( rotWorldMatrix );
-            }
-
-            //moon rotation on orbit
-            rotWorldMatrix = new THREE.Matrix4();
-            rotWorldMatrix.makeRotationAxis(this.rotAxisMoon[x], (days*2*Math.PI) / this.planetDataObject.moon[x].Periode);
-            rotWorldMatrix.multiply(this.objectGroupMoon[x].matrix); // pre-multiply
-            this.objectGroupMoon[x].matrix = rotWorldMatrix;
-            this.objectGroupMoon[x].rotation.setEulerFromRotationMatrix(this.objectGroupMoon[x].matrix);
-
-
-            if(this.planetDataObject.moon[x].varOmega){
-                //apply a change of the Argument of perihelion
-                rotWorldMatrix = new THREE.Matrix4();
-                rotWorldMatrix.makeRotationAxis(this.rotAxisMoon[x], (days/365.2425) * this.planetDataObject.moon[x].varOmega * (Math.PI/180));
-                rotWorldMatrix.multiply(this.objectGroupMoon[x].matrix); // pre-multiply
-                this.objectGroupMoon[x].matrix = rotWorldMatrix;
-                this.objectGroupMoon[x].rotation.setEulerFromRotationMatrix(this.objectGroupMoon[x].matrix);
-            }
+            quaternion.setFromAxisAngle(this.rotAxisMoon[x], (days*2*Math.PI) / this.planetDataObject.Periode);
+            this.objectGroupMoon[x].quaternion.multiply(quaternion);
+            this.objectGroupMoon[x].quaternion.normalize();
         }
     }
 });
